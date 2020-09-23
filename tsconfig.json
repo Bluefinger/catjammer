@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "tsBuildInfoFile": "./.cache/tsBuildInfo",
+    "sourceMap": true,
+    "strict": true,
+    "noUnusedLocals": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "target": "es2019",
+    "rootDir": "./",
+    "stripInternal": true
+  },
+  "include": ["./src/**/*", "./test/**/*"]
+}

@@ -1,0 +1,65 @@
+{
+  "root": true,
+  "parser": "@typescript-eslint/parser",
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/eslint-recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:prettier/recommended",
+    "prettier/@typescript-eslint"
+  ],
+  "env": {
+    "browser": true,
+    "es6": true
+  },
+  "plugins": ["@typescript-eslint", "prettier"],
+  "parserOptions": {
+    "project": ["./config/tsconfig.eslint.json", "./test/tsconfig.json"],
+    "tsconfigRootDir": "./",
+    "ecmaVersion": 2019,
+    "sourceType": "module"
+  },
+  "rules": {
+    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/no-empty-function": "off",
+    "@typescript-eslint/explicit-function-return-type": "off",
+    "@typescript-eslint/unbound-method": "off"
+  },
+  "overrides": [
+    {
+      "files": ["./src/**/*.ts"],
+      "extends": [
+        "plugin:@typescript-eslint/recommended-requiring-type-checking"
+      ]
+    },
+    {
+      "files": [
+        "./*.config.js",
+        "./gulpfile.js",
+        "./compiler.js",
+        "./scripts/**/*.js",
+        ".mocharc.js"
+      ],
+      "env": {
+        "node": true
+      },
+      "rules": {
+        "@typescript-eslint/no-var-requires": "off",
+        "@typescript-eslint/camelcase": "off"
+      }
+    },
+    {
+      "files": ["./test/**/*.ts"],
+      "env": {
+        "node": true,
+        "mocha": true
+      },
+      "extends": [
+        "plugin:@typescript-eslint/recommended-requiring-type-checking"
+      ],
+      "rules": {
+        "@typescript-eslint/explicit-module-boundary-types": "off"
+      }
+    }
+  ]
+}

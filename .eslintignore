@@ -1,0 +1,4 @@
+dist/**/*
+types/**/*
+coverage/**/*.js
+perf/node_modules/**/*

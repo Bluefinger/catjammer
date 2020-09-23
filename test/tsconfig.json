@@ -1,0 +1,12 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "module": "commonjs",
+    "strict": true,
+    "alwaysStrict": true,
+    "target": "esnext",
+    "downlevelIteration": false,
+    "types": ["mocha"]
+  },
+  "include": ["../src/**/*", "./**/*"]
+}
