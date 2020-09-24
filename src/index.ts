@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import { Client, Collection } from "discord.js";
+=======
+import { Collection, Client } from "discord.js";
+>>>>>>> regex fix
 import * as commands from "./commands";
 import { createClientStream, handleCommand } from "./handler";
 

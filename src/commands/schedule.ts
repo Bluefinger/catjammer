@@ -9,7 +9,7 @@ export const schedule: Command = {
     const [day, time, post] = args;
 
     const dayRegex = /^[0-6]$/;
-    if (dayRegex.exec(day)) {
+    if (!dayRegex.exec(day)) {
       void message.channel.send(
         "Invalid day argument (must be number between 0 and 6 with 0 being sunday)"
       );
@@ -17,7 +17,7 @@ export const schedule: Command = {
     }
 
     const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
-    if (timeRegex.exec(time)) {
+    if (!timeRegex.exec(time)) {
       void message.channel.send("Invalid time argument (24 hour time eg 13:30)");
       return;
     }
