@@ -1,18 +1,25 @@
 import type { Command } from "./type";
 import { Message } from "discord.js";
-import { scheduleJob, RecurrenceRule } from "node-schedule";
+import { scheduleJob } from "node-schedule";
+
+const days: Record<string, number> = {
+  Sunday: 0,
+  Monday: 1,
+  Tuesday: 2,
+  Wednesday: 3,
+  Thursday: 4,
+  Friday: 5,
+  Saturday: 6,
+};
 
 export const schedule: Command = {
   name: "schedule",
   description: "Schedule reoccuring messages",
-  execute(message: Message, args: string[]): void {
+  async execute(message: Message, args: string[]): Promise<void> {
     const [day, time, post] = args;
 
-    const dayRegex = /^[0-6]$/;
-    if (!dayRegex.exec(day)) {
-      void message.channel.send(
-        "Invalid day argument (must be number between 0 and 6 with 0 being sunday)"
-      );
+    if (day in days === false) {
+      await message.channel.send("Invalid day argument. Spell full name of day");
       return;
     }
 
@@ -23,13 +30,11 @@ export const schedule: Command = {
     }
 
     const [hour, minute] = time.split(":");
-    const rule = new RecurrenceRule();
-    rule.minute = minute;
-    rule.hour = hour;
-    rule.dayOfWeek = day;
 
-    scheduleJob(rule, () => {
+    scheduleJob({ minute, hour, dayOfWeek: days[day] }, () => {
       void message.channel.send(post);
     });
+
+    await message.channel.send("Message scheduled");
   },
 };
