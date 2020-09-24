@@ -1,10 +1,12 @@
 dependencies:
   discord.js: 12.3.1
   rxjs: 6.6.3
+  node-schedule: 1.3.2
 devDependencies:
   '@types/chai': 4.2.12
   '@types/mocha': 8.0.3
   '@types/node': 14.11.2
+  '@types/node-schedule': 1.3.0
   '@types/sinon': 9.0.5
   '@typescript-eslint/eslint-plugin': 4.2.0_0d6e027e5aced4d334a249431fe3b66e
   '@typescript-eslint/parser': 4.2.0_eslint@7.9.0+typescript@4.0.3
@@ -301,6 +303,12 @@ packages:
     dev: true
     resolution:
       integrity: sha512-vyxR57nv8NfcU0GZu8EUXZLTbCMupIUwy95LJ6lllN+JRPG25CwMHoB1q5xKh8YKhQnHYRAn4yW2yuHbf/5xgg==
+  /@types/node-schedule/1.3.0:
+    dependencies:
+      '@types/node': 14.11.2
+    dev: true
+    resolution:
+      integrity: sha512-gjKmC9wFxn8laKYKwVP2iZvxeiA1DWUb6CXAYXtoYBcDbiyMqxLn2sQq+8aaNc7Xr0p93Hf0O0VizdaEPUO0vA==
   /@types/node/14.11.2:
     dev: true
     resolution:
@@ -738,6 +746,15 @@ packages:
     dev: true
     resolution:
       integrity: sha512-4FJkXzKXEDB1snCFZlLP4gpC3JILicCpGbzG9f9G7tGqGCzETQ2hWPrcinA9oU4wtf2biUaEH5065UnMeR33oA==
+  /cron-parser/2.16.3:
+    dependencies:
+      is-nan: 1.3.0
+      moment-timezone: 0.5.31
+    dev: false
+    engines:
+      node: '>=0.8'
+    resolution:
+      integrity: sha512-XNJBD1QLFeAMUkZtZQuncAAOgJFWNhBdIbwgD22hZxrcWOImBFMKgPC66GzaXpyoJs7UvYLLgPH/8BRk/7gbZg==
   /cross-env/7.0.2:
     dependencies:
       cross-spawn: 7.0.3
@@ -807,7 +824,6 @@ packages:
   /define-properties/1.1.3:
     dependencies:
       object-keys: 1.1.1
-    dev: true
     engines:
       node: '>= 0.4'
     resolution:
@@ -1462,6 +1478,14 @@ packages:
     dev: true
     resolution:
       integrity: sha512-T/S49scO8plUiAOA2DBTBG3JHpn1yiw0kRp6dgiZ0v2/6twi5eiB0rHtHFH9ZIrvlWc6+4O+m4zg5+Z833aXgw==
+  /is-nan/1.3.0:
+    dependencies:
+      define-properties: 1.1.3
+    dev: false
+    engines:
+      node: '>= 0.4'
+    resolution:
+      integrity: sha512-z7bbREymOqt2CCaZVly8aC4ML3Xhfi0ekuOnjO2L8vKdl+CttdVoGZQhd4adMFAsxQ5VeRVwORs4tU8RH+HFtQ==
   /is-number/7.0.0:
     dev: true
     engines:
@@ -1701,6 +1725,10 @@ packages:
       node: '>=10'
     resolution:
       integrity: sha512-FN8JBzLx6CzeMrB0tg6pqlGU1wCrXW+ZXGH481kfsBqer0hToTIiHdjH4Mq8xJUbvATujKCvaREGWpGUionraA==
+  /long-timeout/0.1.1:
+    dev: false
+    resolution:
+      integrity: sha1-lyHXiLR+C8taJMLivuGg2lXatRQ=
   /make-dir/3.1.0:
     dependencies:
       semver: 6.3.0
@@ -1792,6 +1820,16 @@ packages:
     hasBin: true
     resolution:
       integrity: sha512-ZbaYib4hT4PpF4bdSO2DohooKXIn4lDeiYqB+vTmCdr6l2woW0b6H3pf5x4sM5nwQMru9RvjjHYWVGltR50ZBw==
+  /moment-timezone/0.5.31:
+    dependencies:
+      moment: 2.29.0
+    dev: false
+    resolution:
+      integrity: sha512-+GgHNg8xRhMXfEbv81iDtrVeTcWt0kWmTEY1XQK14dICTXnWJnT0dxdlPspwqF3keKMVPXwayEsk1DI0AA/jdA==
+  /moment/2.29.0:
+    dev: false
+    resolution:
+      integrity: sha512-z6IJ5HXYiuxvFTI6eiQ9dm77uE0gyy1yXNApVHqTcnIKfY9tIwEjlzsZ6u1LQXvVgKeTnv9Xm7NDvJ7lso3MtA==
   /ms/2.1.2:
     dev: true
     resolution:
@@ -1824,6 +1862,14 @@ packages:
       node: '>=8'
     resolution:
       integrity: sha512-RM5oyBy45cLEoHqCeh+MNuFAxO0vTFBLskvQbOKnEE7YTTSN4tbN8QWDIPQ6L+WvKsB/qLEGpYe2ZZ9d4W9OIQ==
+  /node-schedule/1.3.2:
+    dependencies:
+      cron-parser: 2.16.3
+      long-timeout: 0.1.1
+      sorted-array-functions: 1.3.0
+    dev: false
+    resolution:
+      integrity: sha512-GIND2pHMHiReSZSvS6dpZcDH7pGPGFfWBIEud6S00Q8zEIzAs9ommdyRK1ZbQt8y1LyZsJYZgPnyi7gpU2lcdw==
   /normalize-path/3.0.0:
     dev: true
     engines:
@@ -1870,7 +1916,6 @@ packages:
     resolution:
       integrity: sha512-jLdtEOB112fORuypAyl/50VRVIBIdVQOSUUGQHzJ4xBSbit81zRarz7GThkEFZy1RceYrWYcPcBFPQwHyAc1gA==
   /object-keys/1.1.1:
-    dev: true
     engines:
       node: '>= 0.4'
     resolution:
@@ -2281,6 +2326,10 @@ packages:
       node: '>=6'
     resolution:
       integrity: sha512-Qu+VC3EwYLldKa1fCxuuvULvSJOKEgk9pi8dZeCVK7TqBfUNTH4sFkk4joj8afVSfAYgJoSOetjx9QWOJ5mYoQ==
+  /sorted-array-functions/1.3.0:
+    dev: false
+    resolution:
+      integrity: sha512-2sqgzeFlid6N4Z2fUQ1cvFmTOLRi/sEDzSQ0OKYchqgoPmQBVyM3959qYx3fpS6Esef80KjmpgPeEr028dP3OA==
   /source-map-support/0.5.19:
     dependencies:
       buffer-from: 1.1.1
@@ -2729,6 +2778,7 @@ specifiers:
   '@types/chai': ^4.2.12
   '@types/mocha': ^8.0.3
   '@types/node': ^14.11.2
+  '@types/node-schedule': ^1.3.0
   '@types/sinon': ^9.0.5
   '@typescript-eslint/eslint-plugin': ^4.1.1
   '@typescript-eslint/parser': ^4.1.1
@@ -2739,6 +2789,7 @@ specifiers:
   eslint-config-prettier: ^6.11.0
   eslint-plugin-prettier: ^3.1.4
   mocha: ^8.1.3
+  node-schedule: ^1.3.2
   nyc: ^15.1.0
   prettier: ^2.1.2
   rxjs: ^6.6.3
