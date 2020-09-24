@@ -2,7 +2,7 @@ import type { Command } from "./type";
 import { Message } from "discord.js";
 import { scheduleJob, RecurrenceRule } from "node-schedule";
 
-export const ping: Command = {
+export const schedule: Command = {
   name: "schedule",
   description: "Schedule reoccuring messages",
   execute(message: Message, args: string[]): void {
