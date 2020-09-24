@@ -3,5 +3,5 @@ import type { Message } from "discord.js";
 export interface Command {
   name: string;
   description: string;
-  execute(message: Message, args: string[]): void;
+  execute(message: Message, args: string[]): Promise<void>;
 }

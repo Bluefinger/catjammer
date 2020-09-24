@@ -1,33 +1,17 @@
-import Discord from "discord.js";
+import { Client, Collection } from "discord.js";
 import * as commands from "./commands";
+import { createClientStream, handleCommand } from "./handler";
 
 /* eslint-disable-next-line */
-const { token, prefix } = require("../config.json") as { token: string; prefix: string };
+const config = require("../config.json") as { token: string; prefix: string };
 
-const client = new Discord.Client();
-const commandCollection = new Discord.Collection(Object.entries(commands));
+const client = new Client();
+const commandCollection = new Collection(Object.entries(commands));
 
-client.once("ready", () => {
-  console.log("ready");
+const eventStream = createClientStream(config, client, commandCollection);
+
+eventStream.subscribe({
+  next: handleCommand(commandCollection),
 });
 
-client.on("message", (message) => {
-  if (!message.content.startsWith(prefix) || message.author.bot) return;
-
-  const args = message.content.slice(prefix.length).trim().split(/ +/);
-  const arg = args.shift();
-  if (arg) {
-    const command = arg.toLowerCase();
-
-    if (!commandCollection.has(command)) return;
-
-    try {
-      commandCollection.get(command)?.execute(message, args);
-    } catch (error) {
-      console.error(error);
-      void message.reply("there was an error executing that command");
-    }
-  }
-});
-
-void client.login(token);
+client.login(config.token).then(console.log).catch(console.error);
