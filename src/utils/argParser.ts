@@ -10,21 +10,7 @@ export const argParser = (
 ): string[] => {
   let cursorOne: number, cursorTwo: number;
   const args = [];
-  cursorOne = 0;
-
-  if (argString[cursorOne] !== prefix) {
-    //not command
-  }
-
-  cursorOne++;
-  cursorTwo = cursorOne;
-  //don't need to check for block argument on command portion
-  while (argString[cursorTwo] !== " ") {
-    cursorTwo++;
-  }
-
-  //first entry in the array is the command
-  args.push(argString.substring(cursorOne, cursorTwo));
+  cursorTwo = prefix.length - 1;
 
   for (cursorOne = cursorTwo + 1; cursorOne < argString.length; cursorOne = cursorTwo + 1) {
     //tolerate multiple spaces between arguments
