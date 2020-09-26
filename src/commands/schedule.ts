@@ -1,5 +1,5 @@
 import type { Command } from "./type";
-import { Message } from "discord.js";
+import { GuildChannel, Message, TextChannel } from "discord.js";
 import { scheduleJob } from "node-schedule";
 
 const days: Record<string, number> = {
@@ -12,14 +12,16 @@ const days: Record<string, number> = {
   Saturday: 6,
 };
 
+const isTextChannel = (channel: GuildChannel): channel is TextChannel => channel.type === "text";
+
 export const schedule: Command = {
   name: "schedule",
   description: "Schedule reoccuring messages",
   async execute(message: Message, args: string[]): Promise<void> {
-    const [day, time, post] = args;
+    const [day, time, channelStr, post] = args;
 
     if (day in days === false) {
-      await message.channel.send("Invalid day argument. Spell full name of day");
+      void message.channel.send("Invalid day argument. Spell full name of day");
       return;
     }
 
@@ -29,10 +31,28 @@ export const schedule: Command = {
       return;
     }
 
+    if (message.channel.type !== "text") {
+      void message.channel.send("This can only be used in a guild channel");
+      return;
+    }
+
+    const { guild } = message.channel;
+    const channel = guild.channels.cache.find((channel) => channel.name === channelStr);
+
+    if (!channel) {
+      void message.channel.send(`${channelStr} channel does not exist`);
+      return;
+    }
+
+    if (!isTextChannel(channel)) {
+      void message.channel.send(`${channelStr} is not a text channel`);
+      return;
+    }
+
     const [hour, minute] = time.split(":");
 
     scheduleJob({ minute, hour, dayOfWeek: days[day] }, () => {
-      void message.channel.send(post);
+      void channel.send(post);
     });
 
     await message.channel.send("Message scheduled");
