@@ -1,16 +1,7 @@
 import type { Command } from "./type";
 import { GuildChannel, Message, TextChannel } from "discord.js";
 import { scheduleJob } from "node-schedule";
-
-const days: Record<string, number> = {
-  Sunday: 0,
-  Monday: 1,
-  Tuesday: 2,
-  Wednesday: 3,
-  Thursday: 4,
-  Friday: 5,
-  Saturday: 6,
-};
+import { validate, days } from "./helpers/scheduleValidators";
 
 const isTextChannel = (channel: GuildChannel): channel is TextChannel => channel.type === "text";
 
@@ -22,19 +13,23 @@ export const schedule: Command = {
     { channel, reply }: Message,
     { day, time, channelStr, message }: Record<string, string>
   ): Promise<void> {
-    if (day in days === false) {
-      await reply("Invalid day argument. Spell full name of day");
+    if (!validate.day(day)) {
+      await reply("Invalid day argument. Day must be spelt in full");
       return;
     }
 
-    const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
-    if (!timeRegex.exec(time)) {
-      await reply("Invalid time argument (24 hour time eg 13:30)");
+    if (!validate.time(time)) {
+      await reply("Invalid time argument. Must use 24 hour time seperated by :");
+      return;
+    }
+
+    if (!validate.channel(channel, "text")) {
+      await reply("Can only be used in a guild channel");
       return;
     }
 
     if (channel.type !== "text") {
-      await reply("This can only be used in a guild channel");
+      await reply("ahaejhjae");
       return;
     }
 
@@ -57,6 +52,6 @@ export const schedule: Command = {
       void targetChannel.send(message);
     });
 
-    await channel.send("Message scheduled");
+    await reply("Schedule successful");
   },
 };
