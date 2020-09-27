@@ -1,3 +1,3 @@
-export * from "./createClientStream";
+export * from "./createMessageStream";
 export * from "./handleCommand";
 export * from "./types";

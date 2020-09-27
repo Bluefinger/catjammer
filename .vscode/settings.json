@@ -1,5 +1,6 @@
 {
     "npm.packageManager": "pnpm",
     "eslint.packageManager": "pnpm",
-    "prettier.packageManager": "pnpm"
+    "prettier.packageManager": "pnpm",
+    "typescript.tsdk": "node_modules/typescript/lib"
 }

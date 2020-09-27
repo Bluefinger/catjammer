@@ -1,17 +1,20 @@
-import { Collection, Client } from "discord.js";
+import { Client } from "discord.js";
 import * as commands from "./commands";
-import { createClientStream, handleCommand } from "./handler";
+import { Config, createMessageStream, handleCommand } from "./handler";
+import { createCommandMatcher } from "./matcher/createMatcher";
 
 /* eslint-disable-next-line */
-const config = require("../config.json") as { token: string; prefix: string };
+const config = require("../config.json") as Config;
 
 const client = new Client();
-const commandCollection = new Collection(Object.entries(commands));
+const commandMatcher = createCommandMatcher(config.prefix, commands);
 
-const eventStream = createClientStream(config, client, commandCollection);
+const eventStream = createMessageStream(config, client, commandMatcher);
 
 eventStream.subscribe({
-  next: handleCommand(commandCollection),
+  next: handleCommand,
 });
 
-client.login(config.token).then(console.log).catch(console.error);
+client.login(config.token).catch(console.error);
+
+process.on("beforeExit", () => client.destroy());

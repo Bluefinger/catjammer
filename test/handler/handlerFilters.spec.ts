@@ -1,10 +1,8 @@
 import { expect } from "chai";
-import { Collection, Message } from "discord.js";
-import { Command } from "../../src/commands/type";
-import { filterCommand, filterMessage } from "../../src/handler/handlerFilters";
-import { HandlerEvent } from "../../src/handler";
+import { Message } from "discord.js";
+import { filterMessage } from "../../src/handler/handlerFilters";
 
-describe("handler filters", () => {
+describe("handlerFilters.ts", () => {
   describe("filterMessage", () => {
     const filter = filterMessage("!");
     it("should filter out messages by bots", () => {
@@ -15,17 +13,6 @@ describe("handler filters", () => {
     });
     it("should not filter out messages that start with a prefix", () => {
       expect(filter({ author: { bot: false }, content: "!message" } as Message)).to.be.true;
-    });
-  });
-  describe("filterCommand", () => {
-    const filter = filterCommand(
-      new Collection<string, Command>([["message", {} as Command]])
-    );
-    it("should filter commands that don't exist", () => {
-      expect(filter({ command: "unknown" } as HandlerEvent)).to.be.false;
-    });
-    it("should not filter commands that exist", () => {
-      expect(filter({ command: "message" } as HandlerEvent)).to.be.true;
     });
   });
 });
