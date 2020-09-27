@@ -1,4 +1,5 @@
 import type { Command } from "../commands/type";
+import { Config } from "../handler";
 import type { CommandDefinition } from "./types";
 
 /**
@@ -16,11 +17,15 @@ const WHITESPACE = /\s/g;
  */
 const ARGUMENT = /:\w+/g;
 /**
- * Matches a `@name` component in a definition. Name arguments assume the
- * same restrictions as normal arguments, alphanumeric characters and
- * underscores, no whitespaces.
+ * Matches a `@name` component in a definition. Names are for capturing user/role
+ * mentions, targetting the snowflake format to ensure correct usage.
  */
 const NAME = /@\w+/g;
+/**
+ * Matches a `"text` component. This is to capture a block of text within a
+ * parenthesis section. Text blocks don't capture new lines.
+ */
+const PAREN = /"\w+/;
 /**
  * Matches a `*` component in a definition. Must be used at
  * the end of a definition.
@@ -41,17 +46,22 @@ const FILLER = "\\s+";
  */
 const ARGUMENT_MATCH = "(\\S+)";
 /**
- * Matches a defined name in a command. Names are put inside
- * `""` to allow for whitespaces, but not linebreaks.
+ * Matches a defined username/role in a command. Usernames/role provided by mentions
+ * come in a specific format
  */
-const NAME_MATCH = '"(.+)"';
+const NAME_MATCH = "(<@(?:!|&)\\d+>)";
 /**
  * Matches everything on a catch-all point. Includes linebreaks.
  */
 const CATCH_ALL_MATCH = "([\\s\\S]*)";
 
+const addToArguments = (args: string[], match: string) => args.push(match.slice(1));
+const escapeCharacters = (text: string) => text.replace(TO_ESCAPE, ESCAPED_CHARS);
+const applyParenthesis = ([left, right]: [string, string]) =>
+  `${escapeCharacters(left)}([^${left}${right}\\n]+)${escapeCharacters(right)}`;
+
 export const createErrorDefinition = (prefix: string): RegExp =>
-  new RegExp(`(${prefix.replace(TO_ESCAPE, ESCAPED_CHARS)}\\w+)`);
+  new RegExp(`(${escapeCharacters(prefix)}\\w+)`);
 
 /**
  * Takes a prefix and a command and generates a `CommandDefinition` for
@@ -59,16 +69,23 @@ export const createErrorDefinition = (prefix: string): RegExp =>
  * @param prefix A prefix for recognising commands
  * @param command A command for the bot to execute
  */
-export const createCommandDefinition = (prefix: string, command: Command): CommandDefinition => {
+export const createCommandDefinition = (
+  { prefix, parenthesis }: Config,
+  command: Command
+): CommandDefinition => {
   const args: string[] = [];
   const matchPattern = command.definition
     .replace(ARGUMENT, (match) => {
-      args.push(match.slice(1));
+      addToArguments(args, match);
       return ARGUMENT_MATCH;
     })
     .replace(NAME, (match) => {
-      args.push(match.slice(1));
+      addToArguments(args, match);
       return NAME_MATCH;
+    })
+    .replace(PAREN, (match) => {
+      addToArguments(args, match);
+      return applyParenthesis(parenthesis);
     })
     .replace(ALL, () => {
       args.push("message");
@@ -77,7 +94,7 @@ export const createCommandDefinition = (prefix: string, command: Command): Comma
     .replace(WHITESPACE, FILLER);
   return {
     command,
-    match: new RegExp(`^${prefix.replace(TO_ESCAPE, ESCAPED_CHARS)}${matchPattern}\\s*$`),
+    match: new RegExp(`^${escapeCharacters(prefix)}${matchPattern}\\s*$`),
     args,
   };
 };

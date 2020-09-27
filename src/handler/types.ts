@@ -1,8 +1,9 @@
 import { Message } from "discord.js";
 
 export interface Config {
-  token: string;
-  prefix: string;
+  readonly token: string;
+  readonly prefix: string;
+  readonly parenthesis: [string, string];
 }
 
 export interface HandlerEvent {

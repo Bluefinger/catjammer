@@ -1,6 +1,7 @@
 import { expect } from "chai";
 import { Message } from "discord.js";
 import { Command } from "../../src/commands/type";
+import { Config } from "../../src/handler";
 import { createCommandMatcher } from "../../src/matcher/createMatcher";
 
 interface FakeMessage {
@@ -9,7 +10,7 @@ interface FakeMessage {
 
 type TestCase = {
   description: string;
-  prefix: string;
+  config: Partial<Config>;
   message: FakeMessage;
   command: Partial<Command>;
   expected:
@@ -29,7 +30,10 @@ type TestCase = {
 const cases: TestCase[] = [
   {
     description: "matches a simple command with no arguments",
-    prefix: "!",
+    config: {
+      prefix: "!",
+      parenthesis: ['"', '"'],
+    },
     message: { content: "!ping" },
     command: { definition: "ping" },
     expected: {
@@ -41,7 +45,10 @@ const cases: TestCase[] = [
   },
   {
     description: "matches a command with one argument",
-    prefix: "!",
+    config: {
+      prefix: "!",
+      parenthesis: ['"', '"'],
+    },
     message: { content: "!ping me" },
     command: { definition: "ping :id" },
     expected: {
@@ -53,7 +60,10 @@ const cases: TestCase[] = [
   },
   {
     description: "matches a command with a catch-all",
-    prefix: "!",
+    config: {
+      prefix: "!",
+      parenthesis: ['"', '"'],
+    },
     message: { content: "!ping me all the things!" },
     command: { definition: "ping *" },
     expected: {
@@ -64,56 +74,116 @@ const cases: TestCase[] = [
     },
   },
   {
-    description: "matches a command with a name value",
-    prefix: "!",
-    message: { content: '!ping "A User#3434"' },
+    description: "matches a command with a username value",
+    config: {
+      prefix: "!",
+      parenthesis: ['"', '"'],
+    },
+    message: { content: "!ping <@!123456789>" },
     command: { definition: "ping @name" },
     expected: {
       matched: true,
-      message: { content: '!ping "A User#3434"' },
+      message: { content: "!ping <@!123456789>" },
       command: { definition: "ping @name" },
+      args: { name: "<@!123456789>" },
+    },
+  },
+  {
+    description: "matches a command with a role value",
+    config: {
+      prefix: "!",
+      parenthesis: ['"', '"'],
+    },
+    message: { content: "!ping <@&123456789>" },
+    command: { definition: "ping @name" },
+    expected: {
+      matched: true,
+      message: { content: "!ping <@&123456789>" },
+      command: { definition: "ping @name" },
+      args: { name: "<@&123456789>" },
+    },
+  },
+  {
+    description: "matches a command with a parenthesis value",
+    config: {
+      prefix: "!",
+      parenthesis: ['"', '"'],
+    },
+    message: { content: '!ping "A User#3434"' },
+    command: { definition: 'ping "name' },
+    expected: {
+      matched: true,
+      message: { content: '!ping "A User#3434"' },
+      command: { definition: 'ping "name' },
       args: { name: "A User#3434" },
     },
   },
   {
     description: "matches a command with multiple argument types",
-    prefix: "!",
+    config: {
+      prefix: "!",
+      parenthesis: ['"', '"'],
+    },
     message: { content: '!ping 89-() "A User#3434" \nA Message to\nsend' },
-    command: { definition: "ping :id @name *" },
+    command: { definition: 'ping :id "name *' },
     expected: {
       matched: true,
       message: { content: '!ping 89-() "A User#3434" \nA Message to\nsend' },
-      command: { definition: "ping :id @name *" },
+      command: { definition: 'ping :id "name *' },
       args: { id: "89-()", name: "A User#3434", message: "A Message to\nsend" },
     },
   },
   {
     description: "matches a command with extra whitespaces between arguments",
-    prefix: "!",
+    config: {
+      prefix: "!",
+      parenthesis: ['"', '"'],
+    },
     message: { content: '!ping \n aaaa  "A User#3434"' },
-    command: { definition: "ping :id @name" },
+    command: { definition: 'ping :id "name' },
     expected: {
       matched: true,
       message: { content: '!ping \n aaaa  "A User#3434"' },
-      command: { definition: "ping :id @name" },
+      command: { definition: 'ping :id "name' },
       args: { id: "aaaa", name: "A User#3434" },
     },
   },
   {
     description: "matches a command with a bigger prefix",
-    prefix: "?!c ",
+    config: {
+      prefix: "?!c ",
+      parenthesis: ['"', '"'],
+    },
     message: { content: '?!c ping \n aaaa  "A User#3434"' },
-    command: { definition: "ping :id @name" },
+    command: { definition: 'ping :id "name' },
     expected: {
       matched: true,
       message: { content: '?!c ping \n aaaa  "A User#3434"' },
-      command: { definition: "ping :id @name" },
+      command: { definition: 'ping :id "name' },
       args: { id: "aaaa", name: "A User#3434" },
     },
   },
   {
+    description: "matches a command with different parentheses defined",
+    config: {
+      prefix: "!",
+      parenthesis: ["<", ">"],
+    },
+    message: { content: "!ping <A User#3434>" },
+    command: { definition: 'ping "name' },
+    expected: {
+      matched: true,
+      message: { content: "!ping <A User#3434>" },
+      command: { definition: 'ping "name' },
+      args: { name: "A User#3434" },
+    },
+  },
+  {
     description: "does not match a non-existant command",
-    prefix: "!",
+    config: {
+      prefix: "!",
+      parenthesis: ['"', '"'],
+    },
     message: { content: "!pingu me all the things!" },
     command: { definition: "ping *" },
     expected: {
@@ -124,7 +194,10 @@ const cases: TestCase[] = [
   },
   {
     description: "does not match a badly formed command or non command messages",
-    prefix: "!",
+    config: {
+      prefix: "!",
+      parenthesis: ['"', '"'],
+    },
     message: { content: "!!!!" },
     command: { definition: "ping *" },
     expected: {
@@ -135,7 +208,10 @@ const cases: TestCase[] = [
   },
   {
     description: "does not partially match an invalid command",
-    prefix: "!",
+    config: {
+      prefix: "!",
+      parenthesis: ['"', '"'],
+    },
     message: { content: "!pingu" },
     command: { definition: "ping" },
     expected: {
@@ -148,9 +224,9 @@ const cases: TestCase[] = [
 
 describe("createMatcher.ts", () => {
   describe("createCommandMatcher", () => {
-    cases.forEach(({ description, prefix, message, command, expected }) => {
+    cases.forEach(({ description, config, message, command, expected }) => {
       it(description, () => {
-        const matcher = createCommandMatcher(prefix, { command: command as Command });
+        const matcher = createCommandMatcher(config as Config, { command: command as Command });
         const result = matcher(message as Message);
         expect(result).to.deep.equal(expected);
       });
