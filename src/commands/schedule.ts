@@ -1,5 +1,4 @@
 import type { Command } from "./type";
-import { Message } from "discord.js";
 import { scheduleJob } from "node-schedule";
 
 const days: Record<string, number> = {
@@ -16,27 +15,24 @@ export const schedule: Command = {
   name: "schedule",
   description: "Schedule reoccuring messages",
   definition: "schedule :day :time *",
-  async execute(
-    { channel, reply }: Message,
-    { day, time, message }: Record<string, string>
-  ): Promise<void> {
+  async execute(command, { day, time, message }): Promise<void> {
     if (day in days === false) {
-      await reply("Invalid day argument. Spell full name of day");
+      await command.reply("Invalid day argument. Spell full name of day");
       return;
     }
 
     const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
     if (!timeRegex.exec(time)) {
-      await reply("Invalid time argument (24 hour time eg 13:30)");
+      await command.reply("Invalid time argument (24 hour time eg 13:30)");
       return;
     }
 
     const [hour, minute] = time.split(":");
 
     scheduleJob({ minute, hour, dayOfWeek: days[day] }, () => {
-      void channel.send(message);
+      void command.channel.send(message);
     });
 
-    await channel.send("Message scheduled");
+    await command.channel.send("Message scheduled");
   },
 };
