@@ -28,12 +28,7 @@ export const schedule: Command = {
       return;
     }
 
-    if (channel.type !== "text") {
-      await reply("ahaejhjae");
-      return;
-    }
-
-    const { guild } = channel;
+    const { guild } = channel as TextChannel;
     const targetChannel = guild.channels.cache.find((channel) => channel.name === channelStr);
 
     if (!targetChannel) {
