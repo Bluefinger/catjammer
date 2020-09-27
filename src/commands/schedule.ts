@@ -17,44 +17,46 @@ const isTextChannel = (channel: GuildChannel): channel is TextChannel => channel
 export const schedule: Command = {
   name: "schedule",
   description: "Schedule reoccuring messages",
-  async execute(message: Message, args: string[]): Promise<void> {
-    const [day, time, channelStr, post] = args;
-
+  definition: "schedule :day :time :channelStr *",
+  async execute(
+    { channel, reply }: Message,
+    { day, time, channelStr, message }: Record<string, string>
+  ): Promise<void> {
     if (day in days === false) {
-      void message.channel.send("Invalid day argument. Spell full name of day");
+      await reply("Invalid day argument. Spell full name of day");
       return;
     }
 
     const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
     if (!timeRegex.exec(time)) {
-      void message.channel.send("Invalid time argument (24 hour time eg 13:30)");
+      await reply("Invalid time argument (24 hour time eg 13:30)");
       return;
     }
 
-    if (message.channel.type !== "text") {
-      void message.channel.send("This can only be used in a guild channel");
+    if (channel.type !== "text") {
+      await reply("This can only be used in a guild channel");
       return;
     }
 
-    const { guild } = message.channel;
-    const channel = guild.channels.cache.find((channel) => channel.name === channelStr);
+    const { guild } = channel;
+    const targetChannel = guild.channels.cache.find((channel) => channel.name === channelStr);
 
-    if (!channel) {
-      void message.channel.send(`${channelStr} channel does not exist`);
+    if (!targetChannel) {
+      await reply(`${channelStr} channel does not exist`);
       return;
     }
 
-    if (!isTextChannel(channel)) {
-      void message.channel.send(`${channelStr} is not a text channel`);
+    if (!isTextChannel(targetChannel)) {
+      await reply(`${channelStr} is not a text channel`);
       return;
     }
 
     const [hour, minute] = time.split(":");
 
     scheduleJob({ minute, hour, dayOfWeek: days[day] }, () => {
-      void channel.send(post);
+      void targetChannel.send(message);
     });
 
-    await message.channel.send("Message scheduled");
+    await channel.send("Message scheduled");
   },
 };
