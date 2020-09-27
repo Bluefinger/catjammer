@@ -1,15 +1,12 @@
+import { readFileSync } from "fs";
 import { Client } from "discord.js";
 import * as commands from "./commands";
 import { Config, createMessageStream, handleCommand } from "./handler";
 import { createCommandMatcher } from "./matcher/createMatcher";
 
-/* eslint-disable-next-line */
-const config = require("../config.json") as Config;
-
+const config = JSON.parse(readFileSync("./config.json", "utf-8")) as Config;
 const client = new Client();
-const commandMatcher = createCommandMatcher(config.prefix, commands);
-
-const eventStream = createMessageStream(config, client, commandMatcher);
+const eventStream = createMessageStream(config, client, createCommandMatcher(config, commands));
 
 eventStream.subscribe({
   next: handleCommand,
