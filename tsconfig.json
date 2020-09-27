@@ -10,7 +10,7 @@
     "moduleResolution": "node",
     "target": "es2019",
     "rootDir": "./",
-    "stripInternal": true,
+    "stripInternal": true
   },
   "include": ["./src/**/*", "./test/**/*"]
 }

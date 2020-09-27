@@ -1,25 +1,30 @@
 import { expect } from "chai";
 import type { Command } from "../../src/commands/type";
+import { Config } from "../../src/handler";
 import {
   createCommandDefinition,
   createErrorDefinition,
 } from "../../src/matcher/createDefinitions";
 
 describe("createDefinitions.ts", () => {
+  const config = {
+    prefix: "!",
+    parenthesis: ['"', '"'],
+  } as Config;
   describe("createCommandDefinition", () => {
     it("should create a working regex match", () => {
-      const definition = createCommandDefinition("!", {
-        definition: "ping :id @name *",
+      const definition = createCommandDefinition(config, {
+        definition: 'ping :id @name "paren *',
       } as Command);
       expect(definition.match.toString()).to.equal(
-        '/^!ping\\s+(\\S+)\\s+"(.+)"\\s+([\\s\\S]*)\\s*$/'
+        '/^!ping\\s+(\\S+)\\s+(<@(?:!|&)\\d+>)\\s+"([^""\\n]+)"\\s+([\\s\\S]*)\\s*$/'
       );
     });
     it("should provide all the arguments in a definition", () => {
-      const definition = createCommandDefinition("!", {
-        definition: "ping :id @name *",
+      const definition = createCommandDefinition(config, {
+        definition: 'ping :id @name "paren *',
       } as Command);
-      expect(definition.args).to.deep.equal(["id", "name", "message"]);
+      expect(definition.args).to.deep.equal(["id", "name", "paren", "message"]);
     });
   });
   describe("createErrorDefinition", () => {

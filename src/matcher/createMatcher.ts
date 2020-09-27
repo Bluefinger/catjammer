@@ -1,6 +1,7 @@
 import { Command } from "../commands/type";
 import { CommandMatcher } from "./types";
 import { createCommandDefinition, createErrorDefinition } from "./createDefinitions";
+import { Config } from "../handler";
 
 const extractMatchedArguments = (matches: RegExpExecArray, args: string[]) =>
   args.reduce<Record<string, string>>((matched, arg, index) => {
@@ -24,13 +25,13 @@ const extractError = (content: RegExpExecArray | null) => {
  * @param commands A record of all available commands
  */
 export const createCommandMatcher = (
-  prefix: string,
+  config: Config,
   commands: Record<string, Command>
 ): CommandMatcher => {
   const indexedCommands = Object.values(commands).map((command) =>
-    createCommandDefinition(prefix, command)
+    createCommandDefinition(config, command)
   );
-  const errorCheck = createErrorDefinition(prefix);
+  const errorCheck = createErrorDefinition(config.prefix);
   return (message) => {
     for (const { command, match, args } of indexedCommands) {
       const matchedCommand = match.exec(message.content);
