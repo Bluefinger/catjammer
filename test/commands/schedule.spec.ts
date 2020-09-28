@@ -82,6 +82,8 @@ describe("schedule command", () => {
       scheduleJobSpy.resetHistory();
     };
 
+    afterEach(() => resetSpies());
+
     it("should not allow incorrect day argument", async () => {
       const args: Record<string, string> = {
         day: "Wrong",
@@ -91,7 +93,6 @@ describe("schedule command", () => {
       };
       await schedule.execute(message as Message, args);
       expect(replySpy.calledWith("Invalid day argument. Day must be spelt in full")).to.be.true;
-      resetSpies();
     });
 
     it("should call scheduleJob with correct arguments", async () => {
@@ -107,7 +108,6 @@ describe("schedule command", () => {
         hour: "01",
         dayOfWeek: 4,
       });
-      resetSpies();
     });
 
     it("should reject channel that doesn't exist in the guild", async () => {
@@ -119,7 +119,6 @@ describe("schedule command", () => {
       };
       await schedule.execute(message as Message, args);
       expect(replySpy.firstCall.args[0]).to.be.eql("Channel does not exist");
-      resetSpies();
     });
 
     it("should reject guild channel that isn't a text channel", async () => {
@@ -131,7 +130,6 @@ describe("schedule command", () => {
       };
       await schedule.execute(message as Message, args);
       expect(replySpy.firstCall.args[0]).to.be.eql("Not a text channel");
-      resetSpies();
     });
 
     it("should reply when successful", async () => {
@@ -143,7 +141,6 @@ describe("schedule command", () => {
       };
       await schedule.execute(message as Message, args);
       expect(replySpy.firstCall.args[0]).to.be.eql("Schedule successful");
-      resetSpies();
     });
 
   });
