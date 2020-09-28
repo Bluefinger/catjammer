@@ -1,38 +1,46 @@
 import type { Command } from "./type";
 import { scheduleJob } from "node-schedule";
-
-const days: Record<string, number> = {
-  Sunday: 0,
-  Monday: 1,
-  Tuesday: 2,
-  Wednesday: 3,
-  Thursday: 4,
-  Friday: 5,
-  Saturday: 6,
-};
+import { validateDay, validateTime, days, isTextChannel } from "./helpers/scheduleValidators";
 
 export const schedule: Command = {
   name: "schedule",
   description: "Schedule reoccuring messages",
-  definition: "schedule :day :time *",
-  async execute(command, { day, time, message }): Promise<void> {
-    if (day in days === false) {
-      await command.reply("Invalid day argument. Spell full name of day");
+  definition: "schedule :day :time :channelStr *",
+  async execute(command, { day, time, channelStr, message }): Promise<void> {
+    if (!validateDay(day)) {
+      await command.reply("Invalid day argument. Day must be spelt in full");
       return;
     }
 
-    const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
-    if (!timeRegex.exec(time)) {
-      await command.reply("Invalid time argument (24 hour time eg 13:30)");
+    if (!validateTime(time)) {
+      await command.reply("Invalid time argument. Must use 24 hour time seperated by :");
+      return;
+    }
+
+    if (!isTextChannel(command.channel)) {
+      await command.reply("Can only be used in a guild channel");
+      return;
+    }
+
+    const { guild } = command.channel;
+    const targetChannel = guild.channels.cache.find((channel) => channel.name === channelStr);
+
+    if (!targetChannel) {
+      await command.reply(`Channel does not exist`);
+      return;
+    }
+
+    if (!isTextChannel(targetChannel)) {
+      await command.reply(`Not a text channel`);
       return;
     }
 
     const [hour, minute] = time.split(":");
 
     scheduleJob({ minute, hour, dayOfWeek: days[day] }, () => {
-      void command.channel.send(message);
+      void targetChannel.send(message);
     });
 
-    await command.channel.send("Message scheduled");
+    await command.reply("Schedule successful");
   },
 };
