@@ -10,7 +10,6 @@ export const schedule: Command = {
   description: "Schedule reoccuring messages",
   definition: "schedule :day :time :channelStr *",
   async execute(command, { day, time, channelStr, message }): Promise<void> {
-    command.channel;
     if (!validate.day(day)) {
       await command.reply("Invalid day argument. Day must be spelt in full");
       return;
