@@ -1,21 +1,18 @@
 import type { Command } from "./type";
-import { TextChannel,  GuildChannel, DMChannel, NewsChannel } from "discord.js";
 import { scheduleJob } from "node-schedule";
-import { validate, days } from "./helpers/scheduleValidators";
-
-const isTextChannel = (channel: GuildChannel | TextChannel | DMChannel | NewsChannel): channel is TextChannel => channel.type === "text";
+import { validateDay, validateTime, days, isTextChannel } from "./helpers/scheduleValidators";
 
 export const schedule: Command = {
   name: "schedule",
   description: "Schedule reoccuring messages",
   definition: "schedule :day :time :channelStr *",
   async execute(command, { day, time, channelStr, message }): Promise<void> {
-    if (!validate.day(day)) {
+    if (!validateDay(day)) {
       await command.reply("Invalid day argument. Day must be spelt in full");
       return;
     }
 
-    if (!validate.time(time)) {
+    if (!validateTime(time)) {
       await command.reply("Invalid time argument. Must use 24 hour time seperated by :");
       return;
     }

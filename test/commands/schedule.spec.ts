@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { validate, Channel } from "../../src/commands/helpers/scheduleValidators";
+import { validateDay, validateTime } from "../../src/commands/helpers/scheduleValidators";
 import { spy }from "sinon";
 import rewiremock from 'rewiremock';
 import {
@@ -22,33 +22,19 @@ import { schedule } from "../../src/commands/schedule";
 describe("schedule command", () => {
   describe("validation", () => {
     it("should reject bad day argument", () => {
-      expect(validate.day("Wrong")).to.be.false;
+      expect(validateDay("Wrong")).to.be.false;
     });
 
     it("should accept good day argument", () => {
-      expect(validate.day("Thursday")).to.be.true;
+      expect(validateDay("Thursday")).to.be.true;
     });
 
     it("should accept good time argument", () => {
-      expect(validate.time("01:20")).to.be.true;
+      expect(validateTime("01:20")).to.be.true;
     });
 
     it("should reject bad time argument", () => {
-      expect(validate.time("bad")).to.be.false;
-    });
-
-    it("should reject channel not of type text", () => {
-      const channel: unknown = {
-        type: "DM",
-      };
-      expect(validate.channel(channel as Channel, "text")).to.be.false;
-    });
-
-    it("should accept channel of type text", () => {
-      const channel: unknown = {
-        type: "text",
-      };
-      expect(validate.channel(channel as Channel, "text")).to.be.true;
+      expect(validateTime("bad")).to.be.false;
     });
   });
 
