@@ -1,9 +1,23 @@
 import { expect } from "chai";
-import * as scheduler from "node-schedule";
-import { schedule } from "../../src/commands/schedule";
 import { validate, Channel } from "../../src/commands/helpers/scheduleValidators";
-import { fake, stub, spy } from "sinon";
-import { Message, Collection, Snowflake, SnowflakeUtil, GuildChannel } from "discord.js";
+import { spy }from "sinon";
+import rewiremock from 'rewiremock';
+import {
+  Message,
+  Collection,
+  Snowflake,
+  SnowflakeUtil,
+  GuildChannel,
+} from "discord.js";
+
+const scheduleJobSpy = spy();
+
+rewiremock('node-schedule').with({
+  scheduleJob: scheduleJobSpy,
+});
+rewiremock.enable();
+
+import { schedule } from "../../src/commands/schedule";
 
 describe("schedule command", () => {
   describe("validation", () => {
@@ -43,12 +57,18 @@ describe("schedule command", () => {
       name: "test",
       type: "text",
     };
+    const wrongChannel: unknown = {
+      name: "wrong",
+      type: "voice",
+    }
     const channelCollection = new Collection<Snowflake, GuildChannel>();
     channelCollection.set(SnowflakeUtil.generate(), fakeChannel as GuildChannel);
-    const fakeReply = spy();
+    channelCollection.set(SnowflakeUtil.generate(), wrongChannel as GuildChannel);
+    const replySpy = spy();
     const message: unknown = {
-      reply: fakeReply,
+      reply: replySpy,
       channel: {
+        type: "text",
         guild: {
           channels: {
             cache: channelCollection,
@@ -56,9 +76,11 @@ describe("schedule command", () => {
         },
       },
     };
-    const scheduleJobFake = fake();
 
-    stub(scheduler, "scheduleJob").callsFake(scheduleJobFake);
+    const resetSpies = () => {
+      replySpy.resetHistory();
+      scheduleJobSpy.resetHistory();
+    };
 
     it("should not allow incorrect day argument", async () => {
       const args: Record<string, string> = {
@@ -68,10 +90,11 @@ describe("schedule command", () => {
         message: "blah blah",
       };
       await schedule.execute(message as Message, args);
-      expect(fakeReply.calledWith("Invalid day argument. Day must be spelt in full")).to.be.true;
+      expect(replySpy.calledWith("Invalid day argument. Day must be spelt in full")).to.be.true;
+      resetSpies();
     });
 
-    it("should call schedule with correct arguments", async () => {
+    it("should call scheduleJob with correct arguments", async () => {
       const args: Record<string, string> = {
         day: "Thursday",
         time: "01:20",
@@ -79,7 +102,36 @@ describe("schedule command", () => {
         message: "blah blah",
       };
       await schedule.execute(message as Message, args);
-      expect(scheduleJobFake.called).to.be.true;
+      expect(scheduleJobSpy.firstCall.args[0]).to.be.eql( {
+        minute: "20",
+        hour: "01",
+        dayOfWeek: 4,
+      });
+      resetSpies();
+    });
+
+    it("should reject channel that doesn't exist in the guild", async () => {
+      const args: Record<string, string> = {
+        day: "Thursday",
+        time: "01:20",
+        channelStr: "fake",
+        message: "blah blah",
+      };
+      await schedule.execute(message as Message, args);
+      expect(replySpy.firstCall.args[0]).to.be.eql("Channel does not exist");
+      resetSpies();
+    });
+
+    it("should reject guild channel that isn't a text channel", async () => {
+      const args: Record<string, string> = {
+        day: "Thursday",
+        time: "01:20",
+        channelStr: "wrong",
+        message: "blah blah",
+      };
+      await schedule.execute(message as Message, args);
+      expect(replySpy.firstCall.args[0]).to.be.eql("Not a text channel");
+      resetSpies();
     });
 
     it("should reply when successful", async () => {
@@ -90,7 +142,9 @@ describe("schedule command", () => {
         message: "blah blah",
       };
       await schedule.execute(message as Message, args);
-      expect(fakeReply.calledWith("Schedule successful")).to.be.true;
+      expect(replySpy.firstCall.args[0]).to.be.eql("Schedule successful");
+      resetSpies();
     });
+
   });
 });

@@ -10,7 +10,6 @@ export const schedule: Command = {
   description: "Schedule reoccuring messages",
   definition: "schedule :day :time :channelStr *",
   async execute(command, { day, time, channelStr, message }): Promise<void> {
-    const { channel } = command;
     if (!validate.day(day)) {
       await command.reply("Invalid day argument. Day must be spelt in full");
       return;
@@ -21,7 +20,7 @@ export const schedule: Command = {
       return;
     }
 
-    if (!validate.channel(channel, "text")) {
+    if (!validate.channel(command.channel, "text")) {
       await command.reply("Can only be used in a guild channel");
       return;
     }
