@@ -16,6 +16,7 @@ type TestCase = {
   expected:
     | {
         matched: true;
+        commands: Partial<Command>[];
         command: Partial<Command>;
         message: FakeMessage;
         args: Record<string, string>;
@@ -38,6 +39,7 @@ const cases: TestCase[] = [
     command: { definition: "ping" },
     expected: {
       matched: true,
+      commands: [{ definition: "ping" }],
       message: { content: "!ping" },
       command: { definition: "ping" },
       args: {},
@@ -55,6 +57,7 @@ const cases: TestCase[] = [
       matched: true,
       message: { content: "!ping me" },
       command: { definition: "ping :id" },
+      commands: [{ definition: "ping :id" }],
       args: { id: "me" },
     },
   },
@@ -70,6 +73,7 @@ const cases: TestCase[] = [
       matched: true,
       message: { content: "!ping me all the things!" },
       command: { definition: "ping *" },
+      commands: [{ definition: "ping *" }],
       args: { message: "me all the things!" },
     },
   },
@@ -85,6 +89,7 @@ const cases: TestCase[] = [
       matched: true,
       message: { content: "!ping <@!123456789>" },
       command: { definition: "ping @name" },
+      commands: [{ definition: "ping @name" }],
       args: { name: "<@!123456789>" },
     },
   },
@@ -100,6 +105,7 @@ const cases: TestCase[] = [
       matched: true,
       message: { content: "!ping <@&123456789>" },
       command: { definition: "ping @name" },
+      commands: [{ definition: "ping @name" }],
       args: { name: "<@&123456789>" },
     },
   },
@@ -115,6 +121,7 @@ const cases: TestCase[] = [
       matched: true,
       message: { content: '!ping "A User#3434"' },
       command: { definition: 'ping "name' },
+      commands: [{ definition: 'ping "name' }],
       args: { name: "A User#3434" },
     },
   },
@@ -130,6 +137,7 @@ const cases: TestCase[] = [
       matched: true,
       message: { content: '!ping 89-() "A User#3434" \nA Message to\nsend' },
       command: { definition: 'ping :id "name *' },
+      commands: [{ definition: 'ping :id "name *' }],
       args: { id: "89-()", name: "A User#3434", message: "A Message to\nsend" },
     },
   },
@@ -145,6 +153,7 @@ const cases: TestCase[] = [
       matched: true,
       message: { content: '!ping \n aaaa  "A User#3434"' },
       command: { definition: 'ping :id "name' },
+      commands: [{ definition: 'ping :id "name' }],
       args: { id: "aaaa", name: "A User#3434" },
     },
   },
@@ -160,6 +169,7 @@ const cases: TestCase[] = [
       matched: true,
       message: { content: '?!c ping \n aaaa  "A User#3434"' },
       command: { definition: 'ping :id "name' },
+      commands: [{ definition: 'ping :id "name' }],
       args: { id: "aaaa", name: "A User#3434" },
     },
   },
@@ -175,6 +185,7 @@ const cases: TestCase[] = [
       matched: true,
       message: { content: "!ping <A User#3434>" },
       command: { definition: 'ping "name' },
+      commands: [{ definition: 'ping "name' }],
       args: { name: "A User#3434" },
     },
   },
@@ -226,7 +237,7 @@ describe("createMatcher.ts", () => {
   describe("createCommandMatcher", () => {
     cases.forEach(({ description, config, message, command, expected }) => {
       it(description, () => {
-        const matcher = createCommandMatcher(config as Config, { command: command as Command });
+        const matcher = createCommandMatcher(config as Config, [command as Command]);
         const result = matcher(message as Message);
         expect(result).to.deep.equal(expected);
       });

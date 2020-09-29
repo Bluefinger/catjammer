@@ -5,7 +5,7 @@ export const handleCommand = async (
 ): Promise<void> => {
   try {
     if (commandEvent.matched) {
-      await commandEvent.command.execute(commandEvent.message, commandEvent.args);
+      await commandEvent.command.execute(commandEvent);
     } else if (commandEvent.details) {
       await commandEvent.message.reply(commandEvent.details);
     }

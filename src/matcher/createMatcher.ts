@@ -24,13 +24,8 @@ const extractError = (content: RegExpExecArray | null) => {
  * @param prefix Prefix for commands
  * @param commands A record of all available commands
  */
-export const createCommandMatcher = (
-  config: Config,
-  commands: Record<string, Command>
-): CommandMatcher => {
-  const indexedCommands = Object.values(commands).map((command) =>
-    createCommandDefinition(config, command)
-  );
+export const createCommandMatcher = (config: Config, commands: Command[]): CommandMatcher => {
+  const indexedCommands = commands.map((command) => createCommandDefinition(config, command));
   const errorCheck = createErrorDefinition(config.prefix);
   return (message) => {
     for (const { command, match, args } of indexedCommands) {
@@ -38,6 +33,7 @@ export const createCommandMatcher = (
       if (matchedCommand) {
         return {
           matched: true,
+          commands,
           command,
           message,
           args: extractMatchedArguments(matchedCommand, args),

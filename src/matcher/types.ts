@@ -13,6 +13,7 @@ interface BaseCommand {
 
 export interface MatchedCommand extends BaseCommand {
   matched: true;
+  commands: Command[];
   command: Command;
   args: Record<string, string>;
 }
