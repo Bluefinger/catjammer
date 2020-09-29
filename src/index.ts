@@ -1,6 +1,6 @@
 import { readFileSync } from "fs";
 import { Client } from "discord.js";
-import * as commands from "./commands";
+import { commands } from "./commands";
 import { Config, createMessageStream, handleCommand } from "./handler";
 import { createCommandMatcher } from "./matcher/createMatcher";
 
