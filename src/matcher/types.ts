@@ -8,22 +8,24 @@ import type { Command } from "../commands/type";
 export type CommandMatcher = (message: Message) => MatchedCommand | InvalidCommand;
 
 interface BaseCommand {
-  message: Message;
+  readonly message: Message;
 }
 
+type ReadonlyList<T> = Readonly<Readonly<T>[]>;
+
 export interface MatchedCommand extends BaseCommand {
-  matched: true;
-  commands: Command[];
-  command: Command;
-  args: Record<string, string>;
+  readonly matched: true;
+  readonly commands: ReadonlyList<Command>;
+  readonly command: Command;
+  readonly args: Record<string, string>;
 }
 export interface InvalidCommand extends BaseCommand {
-  matched: false;
-  details: string | null;
+  readonly matched: false;
+  readonly details: string | null;
 }
 
 export interface CommandDefinition {
-  command: Command;
-  match: RegExp;
-  args: string[];
+  readonly command: Command;
+  readonly match: RegExp;
+  readonly args: string[];
 }

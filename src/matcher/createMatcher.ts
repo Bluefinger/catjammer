@@ -5,10 +5,7 @@ import { Config } from "../handler";
 
 const extractMatchedArguments = (matches: RegExpExecArray, args: string[]) =>
   args.reduce<Record<string, string>>((matched, arg, index) => {
-    const value = matches[index + 1];
-    if (value) {
-      matched[arg] = value;
-    }
+    matched[arg] = matches[index + 1];
     return matched;
   }, {});
 
