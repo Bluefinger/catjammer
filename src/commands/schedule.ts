@@ -6,6 +6,7 @@ export const schedule: Command = {
   name: "schedule",
   description: "Schedule reoccuring messages",
   definition: "schedule :day :time :channelStr *",
+  help: "scehdule help",
   async execute({ message: command, args }): Promise<void> {
     const { day, time, channelStr, message } = args;
     if (!validateDay(day)) {
