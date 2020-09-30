@@ -1,9 +1,8 @@
-import type { Message } from "discord.js";
 import type { MatchedCommand } from "../matcher";
 
 export interface Command {
-  name: string;
-  description: string;
-  definition: string;
+  readonly name: string;
+  readonly description: string;
+  readonly definition: string;
   execute(command: MatchedCommand): Promise<void>;
 }

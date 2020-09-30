@@ -5,7 +5,11 @@
   "main": "index.js",
   "scripts": {
     "start": "ts-node ./src/index.ts",
-    "test": "mocha"
+    "test": "mocha",
+    "coverage": "nyc --use-spawn-wrap mocha",
+    "lint:full": "eslint \"./{src,test}/**/*.ts\"",
+    "lint:quick": "eslint --cache \"./{src,test}/**/*.ts\"",
+    "lint:fix": "eslint --fix \"./{src,test}/**/*.ts\""
   },
   "keywords": [
     "discord",
@@ -18,9 +22,9 @@
     "@types/mocha": "^8.0.3",
     "@types/node": "^14.11.2",
     "@types/node-schedule": "^1.3.0",
-    "@types/sinon": "^9.0.6",
-    "@typescript-eslint/eslint-plugin": "^4.2.0",
-    "@typescript-eslint/parser": "^4.2.0",
+    "@types/sinon": "^9.0.7",
+    "@typescript-eslint/eslint-plugin": "^4.3.0",
+    "@typescript-eslint/parser": "^4.3.0",
     "chai": "^4.2.0",
     "cross-env": "^7.0.2",
     "eslint": "^7.10.0",
@@ -30,14 +34,15 @@
     "nyc": "^15.1.0",
     "prettier": "^2.1.2",
     "rewiremock": "^3.14.3",
-    "sinon": "^9.0.3",
+    "sinon": "^9.1.0",
     "ts-node": "^9.0.0",
     "typescript": "^4.0.3"
   },
   "nyc": {
+    "all": true,
     "reporter": [
       "lcov",
-      "text-summary"
+      "text"
     ],
     "extension": [
       ".ts"
@@ -48,7 +53,9 @@
     "exclude": [
       "benchmarks/**",
       "dist/**",
-      "test/**"
+      "test/**",
+      "src/index.ts",
+      "**/.*.js"
     ]
   },
   "dependencies": {
