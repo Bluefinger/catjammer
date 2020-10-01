@@ -4,6 +4,7 @@ export const commandsList: Command = {
   name: "commands",
   description: "Lists the available commands to the user",
   definition: "commands",
+  help: "has no arguments, just use !commands",
   async execute({ message, commands }): Promise<void> {
     let response = "available commands are:\n";
     commands.forEach((command) => {

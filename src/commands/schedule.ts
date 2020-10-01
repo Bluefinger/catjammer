@@ -6,6 +6,8 @@ export const schedule: Command = {
   name: "schedule",
   description: "Schedule reoccuring messages",
   definition: "schedule :day :time :channelStr *",
+  help:
+    "use !schedule <day> <time> <channel> <message>\n<day> should be spelt with full name and capital first letter\n<time> ##:## 24 hour format\n<channel>name as appears of channel\n<message>rest of command should just be your message",
   async execute({ message: command, args }): Promise<void> {
     const { day, time, channelStr, message } = args;
     if (!validateDay(day)) {
