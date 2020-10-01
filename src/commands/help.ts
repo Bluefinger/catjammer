@@ -11,10 +11,8 @@ export const help: Command = {
 
     if (!result) {
       await message.reply("Command does not exist");
-      return;
     } else {
-      await message.reply(`${result.help}`);
-      return;
+      await message.reply(result.help);
     }
   },
 };
