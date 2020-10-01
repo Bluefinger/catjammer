@@ -7,6 +7,8 @@ export const color: Command = {
   name: "color",
   description: "Sets color of member in the guild",
   definition: "color :colorHex",
+  help:
+    "use !color <hex>\n<hex> #ffffff hexadeciaml format. Google color picker and most will give you this value",
   async execute({ message, args }): Promise<void> {
     const hex = args["colorHex"];
     if (!isValidHex(hex)) {
