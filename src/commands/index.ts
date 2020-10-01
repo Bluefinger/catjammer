@@ -2,5 +2,6 @@ import { commandsList } from "./commandsList";
 import { schedule } from "./schedule";
 import { ping } from "./ping";
 import { Command } from "./type";
+import { color } from "./color";
 
-export const commands: Command[] = [schedule, ping, commandsList];
+export const commands: Command[] = [schedule, ping, commandsList, color];
