@@ -45,6 +45,7 @@ export const createCommandMatcher = (
     return {
       matched: false,
       message,
+      services,
       details: extractError(errorCheck.exec(message.content)),
     };
   };

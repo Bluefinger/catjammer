@@ -26,6 +26,7 @@ type TestCase = {
     | {
         matched: false;
         message: FakeMessage;
+        services: Record<string, unknown>;
         details: string | null;
       };
 };
@@ -213,6 +214,7 @@ const cases: TestCase[] = [
       matched: false,
       message: { content: "!pingu me all the things!" },
       details: "Invalid !pingu command. Please try again.",
+      services: {},
     },
   },
   {
@@ -227,6 +229,7 @@ const cases: TestCase[] = [
       matched: false,
       message: { content: "!!!!" },
       details: null,
+      services: {},
     },
   },
   {
@@ -241,6 +244,7 @@ const cases: TestCase[] = [
       matched: false,
       message: { content: "!pingu" },
       details: "Invalid !pingu command. Please try again.",
+      services: {},
     },
   },
 ];

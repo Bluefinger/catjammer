@@ -10,7 +10,7 @@ export const handleCommand = async (
       await commandEvent.message.reply(commandEvent.details);
     }
   } catch (error) {
-    console.error(error);
-    void commandEvent.message.reply("there was an error executing that command");
+    commandEvent.services.log.error(error);
+    await commandEvent.message.reply("there was an error executing that command");
   }
 };
