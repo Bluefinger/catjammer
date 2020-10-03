@@ -3,6 +3,7 @@ import { Message } from "discord.js";
 import { Command } from "../../src/commands/type";
 import { Config } from "../../src/handler";
 import { createCommandMatcher } from "../../src/matcher/createMatcher";
+import type { Services } from "../../src/matcher";
 
 interface FakeMessage {
   content: string;
@@ -19,6 +20,7 @@ type TestCase = {
         commands: Partial<Command>[];
         command: Partial<Command>;
         message: FakeMessage;
+        services: Record<string, any>;
         args: Record<string, string>;
       }
     | {
@@ -43,6 +45,7 @@ const cases: TestCase[] = [
       message: { content: "!ping" },
       command: { definition: "ping" },
       args: {},
+      services: {},
     },
   },
   {
@@ -59,6 +62,7 @@ const cases: TestCase[] = [
       command: { definition: "ping :id" },
       commands: [{ definition: "ping :id" }],
       args: { id: "me" },
+      services: {},
     },
   },
   {
@@ -75,6 +79,7 @@ const cases: TestCase[] = [
       command: { definition: "ping *" },
       commands: [{ definition: "ping *" }],
       args: { message: "me all the things!" },
+      services: {},
     },
   },
   {
@@ -91,6 +96,7 @@ const cases: TestCase[] = [
       command: { definition: "ping @name" },
       commands: [{ definition: "ping @name" }],
       args: { name: "<@!123456789>" },
+      services: {},
     },
   },
   {
@@ -107,6 +113,7 @@ const cases: TestCase[] = [
       command: { definition: "ping @name" },
       commands: [{ definition: "ping @name" }],
       args: { name: "<@&123456789>" },
+      services: {},
     },
   },
   {
@@ -123,6 +130,7 @@ const cases: TestCase[] = [
       command: { definition: 'ping "name' },
       commands: [{ definition: 'ping "name' }],
       args: { name: "A User#3434" },
+      services: {},
     },
   },
   {
@@ -139,6 +147,7 @@ const cases: TestCase[] = [
       command: { definition: 'ping :id "name *' },
       commands: [{ definition: 'ping :id "name *' }],
       args: { id: "89-()", name: "A User#3434", message: "A Message to\nsend" },
+      services: {},
     },
   },
   {
@@ -155,6 +164,7 @@ const cases: TestCase[] = [
       command: { definition: 'ping :id "name' },
       commands: [{ definition: 'ping :id "name' }],
       args: { id: "aaaa", name: "A User#3434" },
+      services: {},
     },
   },
   {
@@ -171,6 +181,7 @@ const cases: TestCase[] = [
       command: { definition: 'ping :id "name' },
       commands: [{ definition: 'ping :id "name' }],
       args: { id: "aaaa", name: "A User#3434" },
+      services: {},
     },
   },
   {
@@ -187,6 +198,7 @@ const cases: TestCase[] = [
       command: { definition: 'ping "name' },
       commands: [{ definition: 'ping "name' }],
       args: { name: "A User#3434" },
+      services: {},
     },
   },
   {
@@ -237,7 +249,11 @@ describe("createMatcher.ts", () => {
   describe("createCommandMatcher", () => {
     cases.forEach(({ description, config, message, command, expected }) => {
       it(description, () => {
-        const matcher = createCommandMatcher(config as Config, [command as Command]);
+        const matcher = createCommandMatcher(
+          config as Config,
+          [command as Command],
+          {} as Services
+        );
         const result = matcher(message as Message);
         expect(result).to.deep.equal(expected);
       });

@@ -1,5 +1,6 @@
 import type { Message } from "discord.js";
 import type { Command } from "../commands/type";
+import type { Store } from "../services";
 
 /**
  * Command Matcher. Takes a message input and yields either
@@ -13,10 +14,15 @@ interface BaseCommand {
 
 type ReadonlyList<T> = Readonly<Readonly<T>[]>;
 
+export interface Services {
+  store: Store;
+}
+
 export interface MatchedCommand extends BaseCommand {
   readonly matched: true;
   readonly commands: ReadonlyList<Command>;
   readonly command: Command;
+  readonly services: Services;
   readonly args: Record<string, string>;
 }
 export interface InvalidCommand extends BaseCommand {
