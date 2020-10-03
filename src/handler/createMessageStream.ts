@@ -12,7 +12,6 @@ export const createMessageStream = (
 ): Observable<MatchedCommand | InvalidCommand> =>
   fromEventPattern<Message>(
     (handler) => {
-      client.once("ready", () => console.log("CatJammer is ready"));
       client.on("message", handler);
     },
     (handler) => {
