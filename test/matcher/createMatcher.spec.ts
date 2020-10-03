@@ -20,7 +20,7 @@ type TestCase = {
         commands: Partial<Command>[];
         command: Partial<Command>;
         message: FakeMessage;
-        services: Record<string, any>;
+        services: Record<string, unknown>;
         args: Record<string, string>;
       }
     | {
