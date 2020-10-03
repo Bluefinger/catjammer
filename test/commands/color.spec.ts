@@ -36,7 +36,23 @@ describe("color commands", () => {
         },
       };
       const result = await removePreviousColor(user as GuildMember, hexRegex);
-      expect(result).to.be.true;
+      expect(result && removeSpy.called).to.be.true;
+    });
+
+    it("should not delete role if size is greater than 0", async () => {
+      const cache = new Collection();
+      const members = {
+        size: 2,
+      };
+      cache.set(SnowflakeUtil.generate(), { name: "#0f0f0f", delete: deleteSpy, members: members });
+      const user: unknown = {
+        roles: {
+          cache: cache,
+          remove: removeSpy,
+        },
+      };
+      const result = await removePreviousColor(user as GuildMember, hexRegex);
+      expect(result && !deleteSpy.called).to.be.true;
     });
 
     it("should return false when no color role exists", async () => {

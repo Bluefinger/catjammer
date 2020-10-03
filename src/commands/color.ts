@@ -24,8 +24,7 @@ export const color: Command = {
     const roles = await message.guild.roles.fetch();
 
     if (!roles) {
-      await message.reply("Role fetch failed");
-      return;
+      throw new Error("Role fetch failed");
     }
     //check if role with color already exists
     const role = roles.cache.find((role) => role.name === hex);
@@ -36,8 +35,7 @@ export const color: Command = {
     });
 
     if (!guildMember) {
-      await message.reply("Failed to get guild member");
-      return;
+      throw new Error("GuildMember find failed");
     }
 
     await removePreviousColor(guildMember, hexRegex);
@@ -72,8 +70,7 @@ export const removePreviousColor = async (
   const role = user.roles.cache.find((role) => nameRegex.exec(role.name) !== null);
   if (role) {
     await user.roles.remove(role);
-    if (role) {
-      role.members.size === 0;
+    if (role.members.size === 0) {
       await role.delete();
     }
     return true;
