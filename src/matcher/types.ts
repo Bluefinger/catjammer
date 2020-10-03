@@ -15,7 +15,7 @@ interface BaseCommand {
 type ReadonlyList<T> = Readonly<Readonly<T>[]>;
 
 export interface Services {
-  store: Store;
+  readonly store: Store;
 }
 
 export interface MatchedCommand extends BaseCommand {
