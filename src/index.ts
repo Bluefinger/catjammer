@@ -6,9 +6,14 @@ import { createCommandMatcher } from "./matcher/createMatcher";
 import { Store, Logger } from "./services";
 
 const services = {
-  store: new Store(),
+  store: new Store({
+    uri: "sqlite://catjammer.sqlite",
+    busyTimeout: 10000,
+  }),
   log: new Logger(),
 };
+
+services.store.onError((err) => services.log.error(err));
 
 const config = JSON.parse(readFileSync("./config.json", "utf-8")) as Config;
 const client = new Client();
@@ -18,15 +23,16 @@ const eventStream = createMessageStream(
   createCommandMatcher(config, commands, services)
 );
 
-client.once("ready", () => console.log("CatJammer is ready"));
+client.once("ready", () => services.log.info("CatJammer is ready"));
 
 const eventSubscription = eventStream.subscribe({
   next: handleCommand,
 });
 
-client.login(config.token).catch(console.error);
+client.login(config.token).catch((err) => services.log.error(err));
 
-process.on("beforeExit", () => {
+process.on("SIGINT", () => {
   eventSubscription.unsubscribe();
   client.destroy();
+  services.log.info("CatJammer closing cleanly");
 });

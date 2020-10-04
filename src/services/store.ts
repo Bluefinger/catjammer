@@ -1,20 +1,29 @@
+import Keyv from "keyv";
+
+interface StoreOpts {
+  uri?: string;
+  busyTimeout?: number;
+}
+
 export class Store {
-  private store = Promise.resolve(new Map());
-  async get<T extends unknown>(key: string): Promise<T | undefined> {
-    const store = await this.store;
-    return store.get(key) as T | undefined;
+  private store: Keyv;
+  constructor(opts?: StoreOpts) {
+    this.store = new Keyv({
+      uri: opts?.uri,
+      busyTimeout: opts?.busyTimeout,
+      namespace: "bot-store",
+    });
   }
-  async set<T extends unknown>(key: string, value: T): Promise<boolean> {
-    const store = await this.store;
-    store.set(key, value);
-    return true;
+  get<T extends unknown>(key: string): Promise<T | undefined> {
+    return this.store.get(key) as Promise<T | undefined>;
   }
-  async delete(key: string): Promise<boolean> {
-    const store = await this.store;
-    return store.delete(key);
+  set<T extends unknown>(key: string, value: T): Promise<boolean> {
+    return this.store.set(key, value);
   }
-  async has(key: string): Promise<boolean> {
-    const store = await this.store;
-    return store.has(key);
+  delete(key: string): Promise<boolean> {
+    return this.store.delete(key);
+  }
+  onError(fn: (arg: unknown) => void): void {
+    this.store.on("error", fn);
   }
 }
