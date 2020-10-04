@@ -1,17 +1,20 @@
 export class Store {
-  private store = new Map();
-  constructor() {}
-  get<T extends unknown>(key: string): T | undefined {
-    return this.store.get(key) as T | undefined;
+  private store = Promise.resolve(new Map());
+  async get<T extends unknown>(key: string): Promise<T | undefined> {
+    const store = await this.store;
+    return store.get(key) as T | undefined;
   }
-  set<T extends unknown>(key: string, value: T): this {
-    this.store.set(key, value);
-    return this;
+  async set<T extends unknown>(key: string, value: T): Promise<boolean> {
+    const store = await this.store;
+    store.set(key, value);
+    return true;
   }
-  delete(key: string): boolean {
-    return this.store.delete(key);
+  async delete(key: string): Promise<boolean> {
+    const store = await this.store;
+    return store.delete(key);
   }
-  has(key: string): boolean {
-    return this.store.has(key);
+  async has(key: string): Promise<boolean> {
+    const store = await this.store;
+    return store.has(key);
   }
 }
