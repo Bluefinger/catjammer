@@ -1,5 +1,5 @@
 import { Command } from "../commands/type";
-import { CommandMatcher } from "./types";
+import { CommandMatcher, Services } from "./types";
 import { createCommandDefinition, createErrorDefinition } from "./createDefinitions";
 import { Config } from "../handler";
 
@@ -21,7 +21,11 @@ const extractError = (content: RegExpExecArray | null) => {
  * @param prefix Prefix for commands
  * @param commands A record of all available commands
  */
-export const createCommandMatcher = (config: Config, commands: Command[]): CommandMatcher => {
+export const createCommandMatcher = (
+  config: Config,
+  commands: Command[],
+  services: Services
+): CommandMatcher => {
   const indexedCommands = commands.map((command) => createCommandDefinition(config, command));
   const errorCheck = createErrorDefinition(config.prefix);
   return (message) => {
@@ -33,6 +37,7 @@ export const createCommandMatcher = (config: Config, commands: Command[]): Comma
           commands,
           command,
           message,
+          services,
           args: extractMatchedArguments(matchedCommand, args),
         };
       }
@@ -40,6 +45,7 @@ export const createCommandMatcher = (config: Config, commands: Command[]): Comma
     return {
       matched: false,
       message,
+      services,
       details: extractError(errorCheck.exec(message.content)),
     };
   };

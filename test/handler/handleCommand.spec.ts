@@ -18,10 +18,12 @@ describe("handlerCommand.ts", () => {
       expect(spyExecute.calledWith(matched as MatchedCommand)).to.be.true;
     });
     it("handles unexpected errors and returns a message", async () => {
+      const error = new Error("a fail");
       const spyExecute = spy<(command: MatchedCommand) => Promise<void>>(() =>
-        Promise.reject(new Error("a fail"))
+        Promise.reject(error)
       );
       const spyMessage = spy<(message: string) => Promise<void>>(() => Promise.resolve());
+      const spyErrorLog = spy();
       const matched = {
         matched: true,
         command: {
@@ -29,6 +31,11 @@ describe("handlerCommand.ts", () => {
         },
         message: {
           reply: spyMessage,
+        },
+        services: {
+          log: {
+            error: spyErrorLog,
+          },
         },
       } as unknown;
       try {
@@ -39,6 +46,8 @@ describe("handlerCommand.ts", () => {
         expect(spyExecute.calledWith(matched as MatchedCommand)).to.be.true;
         expect(spyMessage.callCount).to.equal(1);
         expect(spyMessage.calledWith("there was an error executing that command")).to.be.true;
+        expect(spyErrorLog.callCount).to.equal(1);
+        expect(spyErrorLog.calledWith(error)).to.be.true;
       }
     });
     it("takes an InvalidCommand response with details and returns a message", async () => {
