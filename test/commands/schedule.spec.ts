@@ -2,15 +2,7 @@ import { expect } from "chai";
 import { validateDay, validateTime } from "../../src/commands/helpers/scheduleValidators";
 import type { MatchedCommand } from "../../src/matcher";
 import { spy } from "sinon";
-import rewiremock from "rewiremock";
 import { Message, Collection, Snowflake, SnowflakeUtil, GuildChannel } from "discord.js";
-
-const scheduleJobSpy = spy();
-
-rewiremock("node-schedule").with({
-  scheduleJob: scheduleJobSpy,
-});
-rewiremock.enable();
 
 import { schedule } from "../../src/commands/schedule";
 
@@ -57,6 +49,11 @@ describe("schedule command", () => {
         },
       },
     };
+    const scheduleJobSpy = spy();
+
+    const services: unknown = {
+      scheduler: { schedule: scheduleJobSpy },
+    };
 
     const resetSpies = () => {
       replySpy.resetHistory();
@@ -72,7 +69,7 @@ describe("schedule command", () => {
         channelStr: "test",
         message: "blah blah",
       };
-      await schedule.execute({ message: message as Message, args } as MatchedCommand);
+      await schedule.execute({ message: message as Message, args, services } as MatchedCommand);
       expect(replySpy.calledWith("Invalid day argument. Day must be spelt in full")).to.be.true;
     });
 
@@ -83,7 +80,7 @@ describe("schedule command", () => {
         channelStr: "test",
         message: "blah blah",
       };
-      await schedule.execute({ message: message as Message, args } as MatchedCommand);
+      await schedule.execute({ message: message as Message, args, services } as MatchedCommand);
       expect(scheduleJobSpy.firstCall.args[0]).to.be.eql({
         minute: "20",
         hour: "01",
@@ -98,7 +95,7 @@ describe("schedule command", () => {
         channelStr: "fake",
         message: "blah blah",
       };
-      await schedule.execute({ message: message as Message, args } as MatchedCommand);
+      await schedule.execute({ message: message as Message, args, services } as MatchedCommand);
       expect(replySpy.firstCall.args[0]).to.be.eql("Channel does not exist");
     });
 
@@ -109,7 +106,7 @@ describe("schedule command", () => {
         channelStr: "wrong",
         message: "blah blah",
       };
-      await schedule.execute({ message: message as Message, args } as MatchedCommand);
+      await schedule.execute({ message: message as Message, args, services } as MatchedCommand);
       expect(replySpy.firstCall.args[0]).to.be.eql("Not a text channel");
     });
 
@@ -120,7 +117,7 @@ describe("schedule command", () => {
         channelStr: "test",
         message: "blah blah",
       };
-      await schedule.execute({ message: message as Message, args } as MatchedCommand);
+      await schedule.execute({ message: message as Message, args, services } as MatchedCommand);
       expect(replySpy.firstCall.args[0]).to.be.eql("Schedule successful");
     });
   });

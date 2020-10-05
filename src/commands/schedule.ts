@@ -1,5 +1,4 @@
 import type { Command } from "./type";
-import { scheduleJob } from "node-schedule";
 import { validateDay, validateTime, days, isTextChannel } from "./helpers/scheduleValidators";
 
 export const schedule: Command = {
@@ -8,7 +7,7 @@ export const schedule: Command = {
   definition: "schedule :day :time :channelStr *",
   help:
     "use !schedule <day> <time> <channel> <message>\n<day> should be spelt with full name and capital first letter\n<time> ##:## 24 hour format\n<channel>name as appears of channel\n<message>rest of command should just be your message",
-  async execute({ message: command, args }): Promise<void> {
+  async execute({ message: command, args, services }): Promise<void> {
     const { day, time, channelStr, message } = args;
     if (!validateDay(day)) {
       await command.reply("Invalid day argument. Day must be spelt in full");
@@ -40,9 +39,11 @@ export const schedule: Command = {
 
     const [hour, minute] = time.split(":");
 
-    scheduleJob({ minute, hour, dayOfWeek: days[day] }, () => {
-      void targetChannel.send(message);
-    });
+    services.scheduler.schedule(
+      { minute, hour, dayOfWeek: days[day] },
+      { content: message },
+      targetChannel
+    );
 
     await command.reply("Schedule successful");
   },
