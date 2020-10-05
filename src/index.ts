@@ -1,21 +1,25 @@
-import { readFileSync } from "fs";
+import { readFileSync, createWriteStream } from "fs";
 import { Client } from "discord.js";
 import { commands } from "./commands";
 import { Config, createMessageStream, handleCommand } from "./handler";
 import { createCommandMatcher } from "./matcher/createMatcher";
 import { Store, Logger } from "./services";
 
+const config = JSON.parse(readFileSync("./config.json", "utf-8")) as Config;
+
 const services = {
   store: new Store({
     uri: "sqlite://catjammer.sqlite",
     busyTimeout: 10000,
   }),
-  log: new Logger(),
+  log: new Logger({
+    stdout: process.stdout,
+    stderr: createWriteStream("./error.log"),
+  }),
 };
 
 services.store.onError((err) => services.log.error(err));
 
-const config = JSON.parse(readFileSync("./config.json", "utf-8")) as Config;
 const client = new Client();
 const eventStream = createMessageStream(
   config,
