@@ -52,7 +52,7 @@ describe("schedule command", () => {
     const scheduleJobSpy = spy();
 
     const services: unknown = {
-      scheduler: {schedule: scheduleJobSpy},
+      scheduler: { schedule: scheduleJobSpy },
     };
 
     const resetSpies = () => {
