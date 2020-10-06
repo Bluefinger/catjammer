@@ -1,5 +1,5 @@
 import { Client, TextChannel } from "discord.js";
-import { scheduleJob } from "node-schedule";
+import { Job, scheduleJob } from "node-schedule";
 import { isTextChannel } from "../commands/helpers/scheduleValidators";
 
 export interface JobParams {
@@ -15,15 +15,18 @@ export interface MessageInfo {
 }
 
 export class Scheduler {
-  private client: Client;
+  jobStore: Map<string, Job>;
   scheduleJob = scheduleJob;
-  constructor(client: Client) {
+
+  constructor(private client: Client) {
     this.client = client;
+    this.jobStore = new Map<string, Job>();
   }
 
-  schedule(params: JobParams, message: MessageInfo, target?: TextChannel): void {
+  schedule(name: string, params: JobParams, message: MessageInfo, target?: TextChannel): void {
+    let job;
     if (target) {
-      this.scheduleJob(params, () => {
+      job = this.scheduleJob(params, () => {
         void target.send(message);
       });
     } else {
@@ -39,9 +42,24 @@ export class Scheduler {
       if (!isTextChannel(channel)) {
         throw new Error("Channel found is not a text channel");
       }
-      this.scheduleJob(params, () => {
+      job = this.scheduleJob(params, () => {
         void channel.send(message.content);
       });
+    }
+    this.jobStore.set(name, job);
+  }
+
+  has(name: string): boolean {
+    return this.jobStore.has(name);
+  }
+
+  cancel(name: string): boolean {
+    const job = this.jobStore.get(name);
+    if (job) {
+      job.cancel();
+      return true;
+    } else {
+      return false;
     }
   }
 }

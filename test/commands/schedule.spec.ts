@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { validateDay, validateTime } from "../../src/commands/helpers/scheduleValidators";
 import type { MatchedCommand } from "../../src/matcher";
-import { spy } from "sinon";
+import { fake, spy } from "sinon";
 import { Message, Collection, Snowflake, SnowflakeUtil, GuildChannel } from "discord.js";
 
 import { schedule } from "../../src/commands/schedule";
@@ -52,7 +52,7 @@ describe("schedule command", () => {
     const scheduleJobSpy = spy();
 
     const services: unknown = {
-      scheduler: { schedule: scheduleJobSpy },
+      scheduler: { schedule: scheduleJobSpy, has: fake.returns(false) },
     };
 
     const resetSpies = () => {
@@ -64,6 +64,7 @@ describe("schedule command", () => {
 
     it("should not allow incorrect day argument", async () => {
       const args: Record<string, string> = {
+        name: "test",
         day: "Wrong",
         time: "01:20",
         channelStr: "test",
@@ -75,13 +76,14 @@ describe("schedule command", () => {
 
     it("should call scheduleJob with correct arguments", async () => {
       const args: Record<string, string> = {
+        name: "test",
         day: "Thursday",
         time: "01:20",
         channelStr: "test",
         message: "blah blah",
       };
       await schedule.execute({ message: message as Message, args, services } as MatchedCommand);
-      expect(scheduleJobSpy.firstCall.args[0]).to.be.eql({
+      expect(scheduleJobSpy.firstCall.args[1]).to.be.eql({
         minute: "20",
         hour: "01",
         dayOfWeek: 4,
@@ -90,6 +92,7 @@ describe("schedule command", () => {
 
     it("should reject channel that doesn't exist in the guild", async () => {
       const args: Record<string, string> = {
+        name: "test",
         day: "Thursday",
         time: "01:20",
         channelStr: "fake",
@@ -101,6 +104,7 @@ describe("schedule command", () => {
 
     it("should reject guild channel that isn't a text channel", async () => {
       const args: Record<string, string> = {
+        name: "test",
         day: "Thursday",
         time: "01:20",
         channelStr: "wrong",
@@ -112,6 +116,7 @@ describe("schedule command", () => {
 
     it("should reply when successful", async () => {
       const args: Record<string, string> = {
+        name: "test",
         day: "Thursday",
         time: "01:20",
         channelStr: "test",
