@@ -4,11 +4,11 @@ import { validateDay, validateTime, days, isTextChannel } from "./helpers/schedu
 export const schedule: Command = {
   name: "schedule",
   description: "Schedule reoccuring messages",
-  definition: "schedule :day :time :channelStr *",
+  definition: "schedule :name :day :time :channelStr *",
   help:
-    "use !schedule <day> <time> <channel> <message>\n<day> should be spelt with full name and capital first letter\n<time> ##:## 24 hour format\n<channel>name as appears of channel\n<message>rest of command should just be your message",
+    "use !schedule <name> <day> <time> <channel> <message>\n<name> is used for cancelling the message, must not have spaces in it\n<day> should be spelt with full name and capital first letter\n<time> ##:## 24 hour format\n<channel>name as appears of channel\n<message>rest of command should just be your message",
   async execute({ message: command, args, services }): Promise<void> {
-    const { day, time, channelStr, message } = args;
+    const { name, day, time, channelStr, message } = args;
     if (!validateDay(day)) {
       await command.reply("Invalid day argument. Day must be spelt in full");
       return;
@@ -22,6 +22,10 @@ export const schedule: Command = {
     if (!isTextChannel(command.channel)) {
       await command.reply("Can only be used in a guild channel");
       return;
+    }
+
+    if (services.scheduler.has(name)) {
+      await command.reply("name already in use");
     }
 
     const { guild } = command.channel;
@@ -40,6 +44,7 @@ export const schedule: Command = {
     const [hour, minute] = time.split(":");
 
     services.scheduler.schedule(
+      name,
       { minute, hour, dayOfWeek: days[day] },
       { content: message },
       targetChannel
