@@ -15,12 +15,11 @@ export interface MessageInfo {
 }
 
 export class Scheduler {
-  jobStore: Map<string, Job>;
+  jobStore = new Map<string, Job>();
   scheduleJob = scheduleJob;
 
   constructor(private client: Client) {
     this.client = client;
-    this.jobStore = new Map<string, Job>();
   }
 
   schedule(name: string, params: JobParams, message: MessageInfo, target?: TextChannel): void {
