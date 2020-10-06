@@ -18,9 +18,7 @@ export class Scheduler {
   jobStore = new Map<string, Job>();
   scheduleJob = scheduleJob;
 
-  constructor(private client: Client) {
-    this.client = client;
-  }
+  constructor(private client: Client) {}
 
   schedule(name: string, params: JobParams, message: MessageInfo, target?: TextChannel): void {
     let job;
