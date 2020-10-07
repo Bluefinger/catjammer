@@ -37,7 +37,7 @@ export const schedule: Command = {
       return;
     }
 
-    if (services.scheduler.has(name, targetChannel.name)) {
+    if (services.scheduler.has(name, targetChannel.guild.name)) {
       await command.reply("name already in use");
     }
 
