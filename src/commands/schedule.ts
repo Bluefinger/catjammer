@@ -39,6 +39,7 @@ export const schedule: Command = {
 
     if (services.scheduler.has(name, targetChannel.guild.name)) {
       await command.reply("name already in use");
+      return;
     }
 
     const [hour, minute] = time.split(":");
