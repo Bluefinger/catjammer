@@ -15,17 +15,19 @@ export interface MessageInfo {
 }
 
 export class Scheduler {
-  jobStore = new Map<string, Job>();
+  jobStore = new Map<string, Map<string, Job>>();
   scheduleJob = scheduleJob;
 
   constructor(private client: Client) {}
 
   schedule(name: string, params: JobParams, message: MessageInfo, target?: TextChannel): void {
     let job;
+    let guildName;
     if (target) {
       job = this.scheduleJob(params, () => {
         void target.send(message);
       });
+      guildName = target.guild.name;
     } else {
       const guild = this.client.guilds.cache.find((guild) => guild.name === message.guild);
       if (!guild) {
@@ -42,18 +44,27 @@ export class Scheduler {
       job = this.scheduleJob(params, () => {
         void channel.send(message.content);
       });
+      guildName = guild.name;
     }
-    this.jobStore.set(name, job);
+    if (!this.jobStore.has(guildName)) {
+      this.jobStore.set(guildName, new Map<string, Job>());
+    }
+    this.jobStore.get(guildName)?.set(name, job);
   }
 
-  has(name: string): boolean {
-    return this.jobStore.has(name);
+  has(name: string, guild: string): boolean {
+    const guildMap = this.jobStore.get(guild);
+    if (!guildMap) {
+      return false;
+    } else {
+      return guildMap.has(name);
+    }
   }
 
-  cancel(name: string): boolean {
-    const job = this.jobStore.get(name);
-    if (job) {
-      job.cancel();
+  cancel(name: string, guild: string): boolean {
+    if (this.has(name, guild)) {
+      const job = this.jobStore.get(guild)?.get(name);
+      job?.cancel();
       return true;
     } else {
       return false;

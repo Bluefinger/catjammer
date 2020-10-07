@@ -24,6 +24,7 @@ describe("scheduler service", () => {
     it("should succesfully call scheduleJob", () => {
       const textChannel: unknown = {
         send: fake(),
+        guild: { name: "test" },
       };
       scheduler.schedule("test", jobParams, { content: "hello" }, textChannel as TextChannel);
       expect(scheduleJobSpy.called).to.be.true;
@@ -42,23 +43,27 @@ describe("scheduler service", () => {
   describe("cancel", () => {
     const scheduler = new Scheduler({} as Client);
     it("should return false if job doesn't exist", () => {
-      expect(scheduler.cancel("test")).to.be.false;
+      expect(scheduler.cancel("test", "test")).to.be.false;
     });
     it("should return true if job exists and call cancel", () => {
       const cancelSpy = spy();
       const job: unknown = { cancel: cancelSpy };
-      scheduler.jobStore.set("test", job as Job);
-      expect(scheduler.cancel("test") && cancelSpy.called).to.be.true;
+      const guildMap = new Map<string, Job>();
+      guildMap.set("test", job as Job);
+      scheduler.jobStore.set("test", guildMap);
+      expect(scheduler.cancel("test", "test") && cancelSpy.called).to.be.true;
     });
   });
   describe("has", () => {
     const scheduler = new Scheduler({} as Client);
     it("return false if no match", () => {
-      expect(scheduler.has("tset")).to.be.false;
+      expect(scheduler.has("test", "wrong")).to.be.false;
     });
-    scheduler.jobStore.set("test", {} as Job);
+    const guildMap = new Map<string, Job>();
+    guildMap.set("test", {} as Job);
+    scheduler.jobStore.set("test", guildMap);
     it("returns true when match found", () => {
-      expect(scheduler.has("test")).to.be.true;
+      expect(scheduler.has("test", "test")).to.be.true;
     });
   });
 });

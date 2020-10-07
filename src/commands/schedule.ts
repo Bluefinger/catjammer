@@ -24,10 +24,6 @@ export const schedule: Command = {
       return;
     }
 
-    if (services.scheduler.has(name)) {
-      await command.reply("name already in use");
-    }
-
     const { guild } = command.channel;
     const targetChannel = guild.channels.cache.find((channel) => channel.name === channelStr);
 
@@ -39,6 +35,10 @@ export const schedule: Command = {
     if (!isTextChannel(targetChannel)) {
       await command.reply(`Not a text channel`);
       return;
+    }
+
+    if (services.scheduler.has(name, targetChannel.name)) {
+      await command.reply("name already in use");
     }
 
     const [hour, minute] = time.split(":");
