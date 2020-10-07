@@ -22,10 +22,12 @@ export class Scheduler {
 
   schedule(name: string, params: JobParams, message: MessageInfo, target?: TextChannel): void {
     let job;
+    let guildName;
     if (target) {
       job = this.scheduleJob(params, () => {
         void target.send(message);
       });
+      guildName = target.guild.name;
     } else {
       const guild = this.client.guilds.cache.find((guild) => guild.name === message.guild);
       if (!guild) {
@@ -42,16 +44,18 @@ export class Scheduler {
       job = this.scheduleJob(params, () => {
         void channel.send(message.content);
       });
+      guildName = guild.name;
     }
-    this.jobStore.set(name, job);
+
+    this.jobStore.set(guildName + name, job);
   }
 
-  has(name: string): boolean {
-    return this.jobStore.has(name);
+  has(name: string, guild: string): boolean {
+    return this.jobStore.has(guild + name);
   }
 
-  cancel(name: string): boolean {
-    const job = this.jobStore.get(name);
+  cancel(name: string, guild: string): boolean {
+    const job = this.jobStore.get(guild + name);
     if (job) {
       job.cancel();
       return true;
