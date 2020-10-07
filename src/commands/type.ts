@@ -1,4 +1,5 @@
-import type { MatchedCommand } from "../matcher";
+import { Client } from "discord.js";
+import type { MatchedCommand, Services } from "../matcher";
 
 export interface Command {
   readonly name: string;
@@ -6,4 +7,8 @@ export interface Command {
   readonly definition: string;
   readonly help: string;
   execute(command: MatchedCommand): Promise<void>;
+}
+
+export interface CommandWithInit extends Command {
+  init(client: Client, services: Services): Promise<void>;
 }

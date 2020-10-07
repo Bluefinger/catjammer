@@ -4,6 +4,7 @@ import { commands } from "./commands";
 import { Config, createMessageStream, handleCommand } from "./handler";
 import { createCommandMatcher } from "./matcher/createMatcher";
 import { Store, Logger, Scheduler } from "./services";
+import type { CommandWithInit } from "./commands/type";
 
 const config = JSON.parse(readFileSync("./config.json", "utf-8")) as Config;
 
@@ -15,12 +16,10 @@ const services = {
   }),
   log: new Logger({
     stdout: process.stdout,
-    stderr: createWriteStream("./error.log"),
+    stderr: createWriteStream("./error.log", { flags: "a" }),
   }),
   scheduler: new Scheduler(client),
 };
-
-services.store.onError((err) => services.log.error(err));
 
 const eventStream = createMessageStream(
   config,
@@ -28,16 +27,37 @@ const eventStream = createMessageStream(
   createCommandMatcher(config, commands, services)
 );
 
-client.once("ready", () => services.log.info("CatJammer is ready"));
-
 const eventSubscription = eventStream.subscribe({
   next: handleCommand,
 });
 
-client.login(config.token).catch((err) => services.log.error(err));
-
-process.on("SIGINT", () => {
+const cleanup = (msg = "CatJammer closing cleanly") => {
   eventSubscription.unsubscribe();
   client.destroy();
-  services.log.info("CatJammer closing cleanly");
+  services.log.info(msg);
+};
+
+const onError = (err: unknown) => {
+  services.log.error("!!FATAL!!", err);
+  cleanup("CatJammer is closing unexpectedly");
+  process.exit(1);
+};
+
+// Do we want to kill the bot on Storage error?
+services.store.onError(onError);
+
+client.once("ready", () => {
+  Promise.all(
+    commands
+      .filter((command): command is CommandWithInit => "init" in command)
+      .map((command) => command.init(client, services))
+  )
+    .then(() => services.log.info("CatJammer is ready"))
+    .catch(onError);
 });
+
+client.login(config.token).catch(onError);
+
+process.on("SIGINT", () => cleanup());
+process.on("uncaughtException", onError);
+process.on("unhandledRejection", onError);
