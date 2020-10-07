@@ -43,7 +43,6 @@ const onError = (err: unknown) => {
   process.exit(1);
 };
 
-// Do we want to kill the bot on Storage error?
 services.store.onError(onError);
 
 client.once("ready", () => {
