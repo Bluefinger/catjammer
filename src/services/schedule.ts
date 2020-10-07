@@ -15,7 +15,7 @@ export interface MessageInfo {
 }
 
 export class Scheduler {
-  jobStore = new Map<string, Map<string, Job>>();
+  jobStore = new Map<string, Job>();
   scheduleJob = scheduleJob;
 
   constructor(private client: Client) {}
@@ -46,25 +46,18 @@ export class Scheduler {
       });
       guildName = guild.name;
     }
-    if (!this.jobStore.has(guildName)) {
-      this.jobStore.set(guildName, new Map<string, Job>());
-    }
-    this.jobStore.get(guildName)?.set(name, job);
+
+    this.jobStore.set(guildName + name, job);
   }
 
   has(name: string, guild: string): boolean {
-    const guildMap = this.jobStore.get(guild);
-    if (!guildMap) {
-      return false;
-    } else {
-      return guildMap.has(name);
-    }
+    return this.jobStore.has(guild + name);
   }
 
   cancel(name: string, guild: string): boolean {
-    if (this.has(name, guild)) {
-      const job = this.jobStore.get(guild)?.get(name);
-      job?.cancel();
+    const job = this.jobStore.get(guild + name);
+    if (job) {
+      job.cancel();
       return true;
     } else {
       return false;

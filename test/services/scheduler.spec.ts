@@ -48,9 +48,7 @@ describe("scheduler service", () => {
     it("should return true if job exists and call cancel", () => {
       const cancelSpy = spy();
       const job: unknown = { cancel: cancelSpy };
-      const guildMap = new Map<string, Job>();
-      guildMap.set("test", job as Job);
-      scheduler.jobStore.set("test", guildMap);
+      scheduler.jobStore.set("testtest", job as Job);
       expect(scheduler.cancel("test", "test") && cancelSpy.called).to.be.true;
     });
   });
@@ -59,9 +57,7 @@ describe("scheduler service", () => {
     it("return false if no match", () => {
       expect(scheduler.has("test", "wrong")).to.be.false;
     });
-    const guildMap = new Map<string, Job>();
-    guildMap.set("test", {} as Job);
-    scheduler.jobStore.set("test", guildMap);
+    scheduler.jobStore.set("testtest", {} as Job);
     it("returns true when match found", () => {
       expect(scheduler.has("test", "test")).to.be.true;
     });
