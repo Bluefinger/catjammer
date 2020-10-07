@@ -29,10 +29,16 @@ describe("schedule command", () => {
     const fakeChannel: unknown = {
       name: "test",
       type: "text",
+      guild: {
+        name: "test",
+      },
     };
     const wrongChannel: unknown = {
       name: "wrong",
       type: "voice",
+      guild: {
+        name: "test",
+      },
     };
     const channelCollection = new Collection<Snowflake, GuildChannel>();
     channelCollection.set(SnowflakeUtil.generate(), fakeChannel as GuildChannel);
