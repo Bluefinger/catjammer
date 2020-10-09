@@ -1,4 +1,4 @@
-import { PermissionLevels, SetPermission } from "../constants";
+import { AllowablePermission, PermissionLevels, SetPermission } from "../constants";
 
 export class Permissions {
   private cache = new Map<string, SetPermission>();
@@ -8,7 +8,7 @@ export class Permissions {
   removePermission(key: string): boolean {
     return this.cache.delete(key);
   }
-  hasPermission(key: string): PermissionLevels {
-    return this.cache.get(key) ?? PermissionLevels.NORMAL;
+  hasPermission(key: string, level: AllowablePermission): boolean {
+    return (this.cache.get(key) ?? PermissionLevels.NORMAL) >= level;
   }
 }
