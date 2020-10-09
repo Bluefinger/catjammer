@@ -1,6 +1,6 @@
 import type { Message } from "discord.js";
 import type { Command } from "../commands/type";
-import type { Logger, Store, Scheduler } from "../services";
+import type { Logger, Store, Scheduler, Permissions } from "../services";
 
 /**
  * Command Matcher. Takes a message input and yields either
@@ -12,6 +12,7 @@ export interface Services {
   readonly store: Store;
   readonly log: Logger;
   readonly scheduler: Scheduler;
+  readonly permissions: Permissions;
 }
 
 interface BaseCommand {
