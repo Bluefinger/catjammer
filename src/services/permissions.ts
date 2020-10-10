@@ -1,14 +1,15 @@
-import { AllowablePermission, PermissionLevels, SetPermission } from "../constants";
+import { AllowablePermission, PermissionLevels, SetPermission, PermissionType } from "../constants";
 
 export class Permissions {
-  private cache = new Map<string, SetPermission>();
-  assignPermission(key: string, level: SetPermission): void {
-    this.cache.set(key, level);
+  private users = new Map<string, SetPermission>();
+  private roles = new Map<string, SetPermission>();
+  assignPermission(key: string, level: SetPermission, type: PermissionType): void {
+    this[type].set(key, level);
   }
-  removePermission(key: string): boolean {
-    return this.cache.delete(key);
+  removePermission(key: string, type: PermissionType): boolean {
+    return this[type].delete(key);
   }
-  hasPermission(key: string, level: AllowablePermission): boolean {
-    return (this.cache.get(key) ?? PermissionLevels.NORMAL) >= level;
+  hasPermission(key: string, level: AllowablePermission, type: PermissionType): boolean {
+    return (this[type].get(key) ?? PermissionLevels.NORMAL) >= level;
   }
 }

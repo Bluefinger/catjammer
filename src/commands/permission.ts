@@ -1,6 +1,8 @@
-import { PermissionLevels, SetPermission } from "../constants";
+import { PermissionLevels, PermissionType, SetPermission } from "../constants";
 import type { Services } from "../matcher";
 import type { CommandWithInit } from "./type";
+
+const isRole = /<@&\d+>/g;
 
 const enum Modifiers {
   GIVE = "give",
@@ -8,23 +10,29 @@ const enum Modifiers {
   BAN = "ban",
 }
 
-type StoredPermissions = [string, SetPermission][];
+type StoredPermissions = [string, SetPermission, PermissionType][];
 
 const grantPermission = async (
   { store, permissions }: Services,
   guildId: string,
   id: string,
-  level: SetPermission
+  level: SetPermission,
+  type: PermissionType
 ) => {
   const key = `${guildId}::${id}`;
   const storedKey = `permissions::${guildId}`;
   const storedPermissions = (await store.get<StoredPermissions>(storedKey)) || [];
-  await store.set<StoredPermissions>(storedKey, [...storedPermissions, [key, level]]);
-  permissions.assignPermission(key, level);
+  await store.set<StoredPermissions>(storedKey, [...storedPermissions, [key, level, type]]);
+  permissions.assignPermission(key, level, type);
   return level === PermissionLevels.BANNED ? "BANNED from using the bot" : "Permission granted";
 };
 
-const removePermission = async ({ store, permissions }: Services, guildId: string, id: string) => {
+const removePermission = async (
+  { store, permissions }: Services,
+  guildId: string,
+  id: string,
+  type: PermissionType
+) => {
   const key = `${guildId}::${id}`;
   const storedKey = `permissions::${guildId}`;
   const storedPermissions = (await store.get<StoredPermissions>(storedKey)) || [];
@@ -32,7 +40,7 @@ const removePermission = async ({ store, permissions }: Services, guildId: strin
     const assignedPermissions = storedPermissions.filter(([storedRole]) => storedRole !== key);
     if (assignedPermissions.length !== storedPermissions.length) {
       await store.set(storedKey, assignedPermissions);
-      permissions.removePermission(key);
+      permissions.removePermission(key, type);
       return "Permission removed";
     }
   }
@@ -47,11 +55,15 @@ export const permission: CommandWithInit = {
     "use !permission give/remove/ban @<Role/Person>.\nYou can grant or remove roles/people from being able to use certain commands, or ban people from using the bot entirely",
   async init(client, { store, permissions }) {
     const loading = client.guilds.cache.map(async ({ id, ownerID }) => {
-      permissions.assignPermission(`${id}::${ownerID}`, PermissionLevels.OFFICER);
+      permissions.assignPermission(
+        `${id}::${ownerID}`,
+        PermissionLevels.OFFICER,
+        PermissionType.USER
+      );
       const storedPermissions = await store.get<StoredPermissions>(`permissions::${id}`);
       if (storedPermissions) {
-        for (const [key, level] of storedPermissions) {
-          permissions.assignPermission(key, level);
+        for (const [key, level, type] of storedPermissions) {
+          permissions.assignPermission(key, level, type);
         }
       }
     });
@@ -64,6 +76,7 @@ export const permission: CommandWithInit = {
     }
     const { modifier, role } = args;
     const id = role.slice(3, -1);
+    const type = isRole.test(role) ? PermissionType.ROLE : PermissionType.USER;
     if (id === message.guild.ownerID) {
       await message.reply("You cannot change the permissions of a Guild owner");
       return;
@@ -71,13 +84,13 @@ export const permission: CommandWithInit = {
     let msg: string;
     switch (modifier) {
       case Modifiers.GIVE:
-        msg = await grantPermission(services, message.guild.id, id, PermissionLevels.OFFICER);
+        msg = await grantPermission(services, message.guild.id, id, PermissionLevels.OFFICER, type);
         break;
       case Modifiers.BAN:
-        msg = await grantPermission(services, message.guild.id, id, PermissionLevels.BANNED);
+        msg = await grantPermission(services, message.guild.id, id, PermissionLevels.BANNED, type);
         break;
       case Modifiers.REMOVE:
-        msg = await removePermission(services, message.guild.id, id);
+        msg = await removePermission(services, message.guild.id, id, type);
         break;
       default:
         msg = "Invalid permission modifier. You can either `give`, `remove`, or `ban`.";

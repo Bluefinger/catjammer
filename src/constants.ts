@@ -1,3 +1,8 @@
+export const enum PermissionType {
+  USER = "users",
+  ROLE = "roles",
+}
+
 export const enum PermissionLevels {
   BANNED = -1,
   NORMAL,
