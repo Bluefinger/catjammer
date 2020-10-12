@@ -1,12 +1,37 @@
 import { expect } from "chai";
 import { validateDay, validateTime } from "../../src/commands/helpers/scheduleValidators";
-import type { MatchedCommand } from "../../src/matcher";
+import type { MatchedCommand, Services } from "../../src/matcher";
 import { fake, spy } from "sinon";
-import { Message, Collection, Snowflake, SnowflakeUtil, GuildChannel } from "discord.js";
-
+import { Message, Collection, Snowflake, SnowflakeUtil, GuildChannel, Client } from "discord.js";
+import { Store } from "../../src/services/store";
 import { schedule } from "../../src/commands/schedule";
+import { Scheduler, StorableJob } from "../../src/services";
 
 describe("schedule command", () => {
+  describe("init", () => {
+    it("set jobs array if none already exists", async () => {
+      const services = {
+        store: new Store(),
+        scheduler: new Scheduler(),
+      };
+      const setSpy = spy();
+      services.store.set = setSpy;
+      await schedule.init({} as Client, services as Services);
+      expect(setSpy.called).to.be.true;
+    });
+
+    it("call scheduleFromStore for each job in array", async () => {
+      const services = {
+        store: new Store(),
+        scheduler: new Scheduler(),
+      };
+      const scheduleFromStoreSpy = spy();
+      services.scheduler.scheduleFromStore = scheduleFromStoreSpy;
+      await services.store.set("jobs", [{} as StorableJob, {} as StorableJob]);
+      await schedule.init({} as Client, services as Services);
+      expect(scheduleFromStoreSpy.callCount).to.be.eql(2);
+    });
+  });
   describe("validation", () => {
     it("should reject bad day argument", () => {
       expect(validateDay("Wrong")).to.be.false;
@@ -57,9 +82,12 @@ describe("schedule command", () => {
     };
     const scheduleJobSpy = spy();
 
-    const services: unknown = {
-      scheduler: { schedule: scheduleJobSpy, has: fake.returns(false) },
+    const services = {
+      scheduler: new Scheduler(),
+      store: new Store(),
     };
+    services.scheduler.has = fake.returns(false);
+    services.scheduler.schedule = scheduleJobSpy;
 
     const resetSpies = () => {
       replySpy.resetHistory();
@@ -76,11 +104,16 @@ describe("schedule command", () => {
         channelStr: "test",
         message: "blah blah",
       };
-      await schedule.execute({ message: message as Message, args, services } as MatchedCommand);
+      await schedule.execute({
+        message: message as Message,
+        args,
+        services: services as Services,
+      } as MatchedCommand);
       expect(replySpy.calledWith("Invalid day argument. Day must be spelt in full")).to.be.true;
     });
 
     it("should call scheduleJob with correct arguments", async () => {
+      await services.store.set("jobs", []);
       const args: Record<string, string> = {
         name: "test",
         day: "Thursday",
@@ -121,6 +154,7 @@ describe("schedule command", () => {
     });
 
     it("should reply when successful", async () => {
+      await services.store.set("jobs", []);
       const args: Record<string, string> = {
         name: "test",
         day: "Thursday",
@@ -130,6 +164,25 @@ describe("schedule command", () => {
       };
       await schedule.execute({ message: message as Message, args, services } as MatchedCommand);
       expect(replySpy.firstCall.args[0]).to.be.eql("Schedule successful");
+    });
+
+    it("job array to be stored should contain new job generated", async () => {
+      await services.store.set("jobs", []);
+      const setSpy = spy();
+      services.store.set = setSpy;
+      const args: Record<string, string> = {
+        name: "test",
+        day: "Thursday",
+        time: "01:20",
+        channelStr: "test",
+        message: "blah blah",
+      };
+      await schedule.execute({ message: message as Message, args, services } as MatchedCommand);
+      const setArgs = setSpy.args[0];
+      expect(setArgs).to.not.be.undefined;
+      const setJobArray = setArgs[1] as StorableJob[];
+      expect(!setJobArray.find((job) => job.name === "test" && job.message.content === "blah blah"))
+        .to.be.false;
     });
   });
 });

@@ -18,7 +18,7 @@ const services = {
     stdout: process.stdout,
     stderr: createWriteStream("./error.log", { flags: "a" }),
   }),
-  scheduler: new Scheduler(client),
+  scheduler: new Scheduler(),
 };
 
 const eventStream = createMessageStream(

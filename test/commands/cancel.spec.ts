@@ -3,15 +3,17 @@ import { cancel } from "../../src/commands/cancel";
 import { Scheduler } from "../../src/services";
 import { MatchedCommand } from "../../src/matcher/types";
 import { fake, spy } from "sinon";
-import { Client, Message } from "discord.js";
+import { Message } from "discord.js";
 import { Job } from "node-schedule";
+import { Store } from "../../src/services";
 
 describe("cancel command", () => {
   describe("execute", () => {
     const replySpy = spy();
     const cancelSpy = spy();
     const services = {
-      scheduler: new Scheduler({} as Client),
+      scheduler: new Scheduler(),
+      store: new Store(),
     };
     services.scheduler.cancel = cancelSpy;
     const args: Record<string, string> = {
@@ -40,6 +42,8 @@ describe("cancel command", () => {
       expect(replySpy.calledWith("Job does not exist")).to.be.true;
     });
     it("successfully call cancel with correct arguments", async () => {
+      const storableJob: unknown = { name: "test", message: { guild: "guild" } };
+      await services.store.set("jobs", [storableJob]);
       const message: unknown = {
         reply: replySpy,
         guild: { name: "guild" },
