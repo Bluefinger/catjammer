@@ -1,4 +1,4 @@
-import { Client, TextChannel, Message } from "discord.js";
+import { Client, TextChannel } from "discord.js";
 import { Job, scheduleJob } from "node-schedule";
 import { isTextChannel } from "../commands/helpers/scheduleValidators";
 
