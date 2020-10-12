@@ -53,27 +53,6 @@ export class Scheduler {
     this.jobStore.set(storeJob.message.guild + storeJob.name, job);
   }
 
-  scheduleWorkAround(storeJob: StorableJob, message: Message): void {
-    if (storeJob.message.guild === message.guild?.name) {
-      const target = message.guild.channels.cache.find(
-        (channel) => channel.name === storeJob.message.channel
-      );
-
-      if (!target) {
-        throw new Error("Channel not found");
-      }
-
-      if (!isTextChannel(target)) {
-        throw new Error("Channel found is not a text channel");
-      }
-
-      const job = this.scheduleJob(storeJob.params, () => {
-        void target.send(storeJob.message.content);
-      });
-      this.jobStore.set(storeJob.message.guild + storeJob.name, job);
-    }
-  }
-
   has(name: string, guild: string): boolean {
     return this.jobStore.has(guild + name);
   }
