@@ -21,19 +21,18 @@ export const cancel: Command = {
     }
 
     services.scheduler.cancel(name, message.guild.name);
-    //remove persistance once implemented
+
     const jobs = await services.store.get<StorableJob[]>("jobs");
     if (!jobs) {
       throw new Error("Failed to get jobs from store");
     }
 
-    const index = jobs.findIndex((job) => job.name === name && job.message.guild === guildName);
-
-    if (index === -1) {
-      throw new Error("Job not found in store array");
+    const filteredJobs = jobs.filter((job) => job.name !== name && job.message.guild !== guildName);
+    if (filteredJobs.length === jobs.length) {
+      throw new Error("Job was found in memory but does not exist in the store");
+    } else {
+      await services.store.set("jobs", filteredJobs);
+      await message.reply("Job removed");
     }
-    jobs.splice(index, 1);
-    await services.store.set("jobs", jobs);
-    await message.reply("Job removed");
   },
 };
