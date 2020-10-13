@@ -6,7 +6,7 @@ import type { Logger, Store, Scheduler, Permissions } from "../services";
  * Command Matcher. Takes a message input and yields either
  * `MatchedCommand` or `InvalidCommand` results
  */
-export type CommandMatcher = (message: Message) => MatchedCommand | InvalidCommand;
+export type ArgumentExtractor = (command: RoutedCommand) => ExtractedCommand | InvalidCommand;
 
 export interface Services {
   readonly store: Store;
@@ -22,7 +22,7 @@ interface BaseCommand {
 
 type ReadonlyList<T> = Readonly<Readonly<T>[]>;
 
-export interface MatchedCommand extends BaseCommand {
+export interface ExtractedCommand extends BaseCommand {
   readonly matched: true;
   readonly commands: ReadonlyList<Command>;
   readonly command: Command;
@@ -30,11 +30,18 @@ export interface MatchedCommand extends BaseCommand {
 }
 export interface InvalidCommand extends BaseCommand {
   readonly matched: false;
-  readonly details: string | null;
+  readonly details: string;
 }
 
 export interface CommandDefinition {
-  readonly command: Command;
   readonly match: RegExp;
   readonly args: string[];
 }
+
+export interface RoutedCommand {
+  message: Message;
+  command: Command;
+}
+
+export type CommandRouter = (message: Message) => RoutedCommand | undefined;
+export type PermissionGuard = (command: RoutedCommand) => boolean;

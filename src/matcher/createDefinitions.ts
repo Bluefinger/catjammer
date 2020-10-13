@@ -60,8 +60,8 @@ const escapeCharacters = (text: string) => text.replace(TO_ESCAPE, ESCAPED_CHARS
 const applyParenthesis = ([left, right]: [string, string]) =>
   `${escapeCharacters(left)}([^${left}${right}\\n]+)${escapeCharacters(right)}`;
 
-export const createErrorDefinition = (prefix: string): RegExp =>
-  new RegExp(`(${escapeCharacters(prefix)}\\w+)`);
+export const createCommandNameDefinition = (prefix: string): RegExp =>
+  new RegExp(`${escapeCharacters(prefix)}(\\w+)`);
 
 /**
  * Takes a prefix and a command and generates a `CommandDefinition` for
@@ -71,10 +71,10 @@ export const createErrorDefinition = (prefix: string): RegExp =>
  */
 export const createCommandDefinition = (
   { prefix, parenthesis }: Config,
-  command: Command
+  { definition }: Command
 ): CommandDefinition => {
   const args: string[] = [];
-  const matchPattern = command.definition
+  const matchPattern = definition
     .replace(ARGUMENT, (match) => {
       addToArguments(args, match);
       return ARGUMENT_MATCH;
@@ -93,7 +93,6 @@ export const createCommandDefinition = (
     })
     .replace(WHITESPACE, FILLER);
   return {
-    command,
     match: new RegExp(`^${escapeCharacters(prefix)}${matchPattern}\\s*$`),
     args,
   };

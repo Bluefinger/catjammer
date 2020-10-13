@@ -76,11 +76,11 @@ export const permission: CommandWithInit = {
     }
     const { modifier, role } = args;
     const id = role.slice(3, -1);
-    const type = isRole.test(role) ? PermissionType.ROLE : PermissionType.USER;
     if (id === message.guild.ownerID) {
       await message.reply("You cannot change the permissions of a Guild owner");
       return;
     }
+    const type = isRole.test(role) ? PermissionType.ROLE : PermissionType.USER;
     let msg: string;
     switch (modifier) {
       case Modifiers.GIVE:

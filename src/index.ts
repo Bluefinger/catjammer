@@ -2,9 +2,11 @@ import { readFileSync, createWriteStream } from "fs";
 import { Client } from "discord.js";
 import { commands } from "./commands";
 import { Config, createMessageStream, handleCommand } from "./handler";
-import { createCommandMatcher } from "./matcher/createMatcher";
+import { createArgumentMatcher } from "./matcher/createMatcher";
 import { Store, Logger, Scheduler, Permissions } from "./services";
 import type { CommandWithInit } from "./commands/type";
+import { createCommandRouter } from "./matcher/createCommandRouter";
+import { createPermissionGuard } from "./matcher/permissionGuard";
 
 const config = JSON.parse(readFileSync("./config.json", "utf-8")) as Config;
 
@@ -26,23 +28,25 @@ const services = {
 const eventStream = createMessageStream(
   config,
   client,
-  createCommandMatcher(config, commands, services)
+  createCommandRouter(config, commands),
+  createPermissionGuard(services),
+  createArgumentMatcher(config, commands, services)
 );
 
 const eventSubscription = eventStream.subscribe({
   next: handleCommand,
 });
 
-const cleanup = (msg = "CatJammer closing cleanly") => {
+const cleanup = (msg = "CatJammer closing cleanly", code = 0) => {
   eventSubscription.unsubscribe();
   client.destroy();
   services.log.info(msg);
+  process.exit(code);
 };
 
 const onError = (err: unknown) => {
   services.log.error("!!FATAL!!", err);
-  cleanup("CatJammer is closing unexpectedly");
-  process.exit(1);
+  cleanup("CatJammer is closing unexpectedly", 1);
 };
 
 services.store.onError(onError);
