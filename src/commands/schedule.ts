@@ -1,7 +1,18 @@
-import type { Command } from "./type";
+import type { CommandWithInit } from "./type";
+import type { StorableJob } from "../services/schedule";
 import { validateDay, validateTime, days, isTextChannel } from "./helpers/scheduleValidators";
 
-export const schedule: Command = {
+export const schedule: CommandWithInit = {
+  init: async (client, services) => {
+    const jobs = await services.store.get<StorableJob[]>("jobs");
+    if (!jobs) {
+      await services.store.set("jobs", []);
+    } else {
+      jobs.forEach((job) => {
+        services.scheduler.scheduleFromStore(job, client);
+      });
+    }
+  },
   name: "schedule",
   description: "Schedule reoccuring messages",
   definition: "schedule :name :day :time :channelStr *",
@@ -44,13 +55,21 @@ export const schedule: Command = {
 
     const [hour, minute] = time.split(":");
 
-    services.scheduler.schedule(
-      name,
-      { minute, hour, dayOfWeek: days[day] },
-      { content: message },
-      targetChannel
-    );
+    const params = { minute, hour, dayOfWeek: days[day] };
 
+    services.scheduler.schedule(name, params, message, targetChannel);
+
+    const jobs = await services.store.get<StorableJob[]>("jobs");
+    if (!jobs) {
+      throw new Error("Failed to load jobs from store");
+    }
+    const storableJob: StorableJob = {
+      name,
+      params,
+      message: { guild: targetChannel.guild.name, channel: targetChannel.name, content: message },
+    };
+    jobs.push(storableJob);
+    await services.store.set("jobs", jobs);
     await command.reply("Schedule successful");
   },
 };

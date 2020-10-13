@@ -1,4 +1,5 @@
 import type { Command } from "./type";
+import type { StorableJob } from "../services/schedule";
 
 export const cancel: Command = {
   name: "cancel",
@@ -12,6 +13,7 @@ export const cancel: Command = {
       await message.reply("Must be used in a guild channel");
       return;
     }
+    const guildName = message.guild.name;
 
     if (!services.scheduler.has(name, message.guild.name)) {
       await message.reply("Job does not exist");
@@ -19,7 +21,18 @@ export const cancel: Command = {
     }
 
     services.scheduler.cancel(name, message.guild.name);
-    //remove persistance once implemented
-    await message.reply("Job removed");
+
+    const jobs = await services.store.get<StorableJob[]>("jobs");
+    if (!jobs) {
+      throw new Error("Failed to get jobs from store");
+    }
+
+    const filteredJobs = jobs.filter((job) => job.name !== name && job.message.guild !== guildName);
+    if (filteredJobs.length === jobs.length) {
+      throw new Error("Job was found in memory but does not exist in the store");
+    } else {
+      await services.store.set("jobs", filteredJobs);
+      await message.reply("Job removed");
+    }
   },
 };
