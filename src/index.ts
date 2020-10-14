@@ -21,7 +21,6 @@ const services: Services = {
   }),
   scheduler: new Scheduler(),
   permissions: new Permissions(),
-
 };
 
 const eventStream = createMessageStream(config, client, commands, services);

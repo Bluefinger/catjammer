@@ -1,6 +1,7 @@
 import { expect } from "chai";
 import { validateDay, validateTime } from "../../src/commands/helpers/scheduleValidators";
 import type { ExtractedCommand } from "../../src/matcher";
+import type { Services } from "../../src/index.types";
 import { fake, spy } from "sinon";
 import { Message, Collection, Snowflake, SnowflakeUtil, GuildChannel, Client } from "discord.js";
 import { Store } from "../../src/services/store";
@@ -174,7 +175,7 @@ describe("schedule command", () => {
         channelStr: "test",
         message: "blah blah",
       };
-      await schedule.execute({ message: message as Message, args, services } as MatchedCommand);
+      await schedule.execute({ message: message as Message, args, services } as ExtractedCommand);
       const setArgs = setSpy.args[0];
       expect(setArgs).to.not.be.undefined;
       const setJobArray = setArgs[1] as StorableJob[];
