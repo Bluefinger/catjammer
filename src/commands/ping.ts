@@ -5,7 +5,7 @@ export const ping: Command = {
   description: "Ping!",
   definition: "ping",
   help: "use !ping",
-  permission: 1,
+  permission: 0,
   async execute({ message }) {
     await message.channel.send("Pong");
   },

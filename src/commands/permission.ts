@@ -54,6 +54,7 @@ export const permission: CommandWithInit = {
   name: "permission",
   description: "Grants permissions to roles so that they can use certain commands",
   definition: "permission :modifier @role",
+  permission: 1,
   help:
     "use !permission give/remove/ban @<Role/Person>.\nYou can grant or remove roles/people from being able to use certain commands, or ban people from using the bot entirely",
   async init(client, { store, permissions }) {
