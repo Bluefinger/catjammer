@@ -1,9 +1,10 @@
 import { expect } from "chai";
-import { Config, createMessageStream } from "../../src/handler";
-import { spy } from "sinon";
-import { Client, Message } from "discord.js";
+import type { Config, Services } from "../../src/index.types";
+import { createMessageStream } from "../../src/streams";
+import type { Client, Message } from "discord.js";
 import { EventEmitter } from "events";
-import { MatchedCommand } from "../../src/matcher";
+import { Permissions } from "../../src/services";
+import { Command } from "../../src/commands/type";
 
 const config: Config = {
   token: "a",
@@ -11,12 +12,28 @@ const config: Config = {
   parenthesis: ['"', '"'],
 };
 
+const services = {
+  permissions: new Permissions(),
+} as Services;
+
+const commands: Command[] = [
+  {
+    name: "ping",
+    description: "a ping",
+    help: "Something",
+    permission: 0,
+    definition: "ping :thing",
+    execute() {
+      return Promise.resolve();
+    },
+  },
+];
+
 describe("createMessageStream.ts", () => {
   describe("createMessageStream", () => {
     it("creates a subscribable Stream", () => {
-      const spyMatcher = spy(() => ({} as MatchedCommand));
       const fakeClient = new EventEmitter() as Client;
-      const stream = createMessageStream(config, fakeClient, spyMatcher);
+      const stream = createMessageStream(config, fakeClient, commands, services);
       // eslint-disable-next-line
       expect(stream.subscribe).to.be.a("function");
 
@@ -30,27 +47,48 @@ describe("createMessageStream.ts", () => {
       expect((fakeClient as EventEmitter).listenerCount("message")).to.equal(1);
     });
     it("emits valid message events", () => {
-      const spyMatcher = spy((message: Message) => ({ message } as MatchedCommand));
+      const assertions = 1;
+      let assertionCount = 0;
       const fakeClient = new EventEmitter() as Client;
-      const stream = createMessageStream(config, fakeClient, spyMatcher);
+      const stream = createMessageStream(config, fakeClient, commands, services);
       const fakeMessage = {
         author: {
           bot: false,
+          id: "id0",
+          presence: {
+            member: {
+              roles: {
+                highest: {
+                  id: "id3",
+                },
+              },
+            },
+          },
         },
-        content: "!command",
+        guild: {
+          id: "guild",
+        },
+        content: "!ping me",
       } as unknown;
       stream.subscribe({
         next: (message) => {
-          expect(message).to.deep.equal({ message: fakeMessage });
-          expect(spyMatcher.callCount).to.equal(1);
+          expect(message).to.deep.equal({
+            matched: true,
+            message: fakeMessage,
+            services,
+            commands,
+            command: commands[0],
+            args: { thing: "me" },
+          });
+          assertionCount += 1;
         },
       });
       fakeClient.emit("message", fakeMessage as Message);
+      expect(assertionCount).to.equal(assertions);
     });
     it("filters messages from a bot", () => {
-      const spyMatcher = spy((message: Message) => ({ message } as MatchedCommand));
       const fakeClient = new EventEmitter() as Client;
-      const stream = createMessageStream(config, fakeClient, spyMatcher);
+      const stream = createMessageStream(config, fakeClient, commands, services);
       const fakeMessage = {
         author: {
           bot: true,
@@ -63,15 +101,26 @@ describe("createMessageStream.ts", () => {
         },
       });
       fakeClient.emit("message", fakeMessage as Message);
-      expect(spyMatcher.callCount).to.equal(0);
     });
     it("filters messages that don't begin with the prefix", () => {
-      const spyMatcher = spy((message: Message) => ({ message } as MatchedCommand));
       const fakeClient = new EventEmitter() as Client;
-      const stream = createMessageStream(config, fakeClient, spyMatcher);
+      const stream = createMessageStream(config, fakeClient, commands, services);
       const fakeMessage = {
         author: {
           bot: false,
+          id: "id0",
+          presence: {
+            member: {
+              roles: {
+                highest: {
+                  id: "id3",
+                },
+              },
+            },
+          },
+        },
+        guild: {
+          id: "guild",
         },
         content: "someone says hi",
       } as unknown;
@@ -81,18 +130,18 @@ describe("createMessageStream.ts", () => {
         },
       });
       fakeClient.emit("message", fakeMessage as Message);
-      expect(spyMatcher.callCount).to.equal(0);
     });
     it("cleans up event handlers when subscription is ended", () => {
-      const spyMatcher = spy((message: Message) => ({ message } as MatchedCommand));
       const fakeClient = new EventEmitter() as Client;
-      const stream = createMessageStream(config, fakeClient, spyMatcher);
+      const stream = createMessageStream(config, fakeClient, commands, services);
       const subscription = stream.subscribe({
-        complete: () => {
-          expect((fakeClient as EventEmitter).listenerCount("message")).to.equal(0);
+        next: () => {
+          expect.fail("should not receive emitted message");
         },
       });
+      expect((fakeClient as EventEmitter).listenerCount("message")).to.equal(1);
       subscription.unsubscribe();
+      expect((fakeClient as EventEmitter).listenerCount("message")).to.equal(0);
     });
   });
 });

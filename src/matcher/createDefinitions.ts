@@ -1,6 +1,6 @@
 import type { Command } from "../commands/type";
-import { Config } from "../handler";
-import type { CommandDefinition } from "./types";
+import type { Config } from "../index.types";
+import type { ArgumentDefinition } from "./types";
 
 /**
  * Matches all invalid characters that are needed to be escaped.
@@ -60,21 +60,21 @@ const escapeCharacters = (text: string) => text.replace(TO_ESCAPE, ESCAPED_CHARS
 const applyParenthesis = ([left, right]: [string, string]) =>
   `${escapeCharacters(left)}([^${left}${right}\\n]+)${escapeCharacters(right)}`;
 
-export const createErrorDefinition = (prefix: string): RegExp =>
-  new RegExp(`(${escapeCharacters(prefix)}\\w+)`);
+export const createCommandNameDefinition = (prefix: string): RegExp =>
+  new RegExp(`${escapeCharacters(prefix)}(\\w+)`);
 
 /**
- * Takes a prefix and a command and generates a `CommandDefinition` for
+ * Takes a prefix and a command and generates an `ArgumentDefinition` for
  * matching and extracting arguments relevant for a given command.
  * @param prefix A prefix for recognising commands
  * @param command A command for the bot to execute
  */
-export const createCommandDefinition = (
+export const createArgumentDefinition = (
   { prefix, parenthesis }: Config,
-  command: Command
-): CommandDefinition => {
+  { definition }: Command
+): ArgumentDefinition => {
   const args: string[] = [];
-  const matchPattern = command.definition
+  const matchPattern = definition
     .replace(ARGUMENT, (match) => {
       addToArguments(args, match);
       return ARGUMENT_MATCH;
@@ -93,7 +93,6 @@ export const createCommandDefinition = (
     })
     .replace(WHITESPACE, FILLER);
   return {
-    command,
     match: new RegExp(`^${escapeCharacters(prefix)}${matchPattern}\\s*$`),
     args,
   };

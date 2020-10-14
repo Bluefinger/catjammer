@@ -2,7 +2,7 @@ import { color, isValidHex, removePreviousColor } from "../../src/commands/color
 import { expect } from "chai";
 import { spy, fake } from "sinon";
 import { Message, Collection, SnowflakeUtil, GuildMember, Snowflake, Role } from "discord.js";
-import { MatchedCommand } from "../../src/matcher/types";
+import { ExtractedCommand } from "../../src/matcher";
 
 describe("color commands", () => {
   describe("validation", () => {
@@ -102,7 +102,7 @@ describe("color commands", () => {
       await color.execute({
         message: message as Message,
         args,
-      } as MatchedCommand);
+      } as ExtractedCommand);
       expect(replySpy.firstCall.args[0]).to.be.eql("Invalid hex value");
     });
 
@@ -112,7 +112,7 @@ describe("color commands", () => {
       await color.execute({
         message: message as Message,
         args,
-      } as MatchedCommand);
+      } as ExtractedCommand);
       expect(replySpy.firstCall.args[0]).to.be.eql("Must be used in a guild channel");
     });
 
@@ -149,7 +149,7 @@ describe("color commands", () => {
         guild: guild,
         reply: replySpy,
       };
-      await color.execute({ message: message as Message, args: args } as MatchedCommand);
+      await color.execute({ message: message as Message, args: args } as ExtractedCommand);
       expect(replySpy.firstCall.args[0]).to.be.eql("New color set");
     });
 
@@ -162,7 +162,7 @@ describe("color commands", () => {
         guild: guild,
         reply: replySpy,
       };
-      await color.execute({ message: message as Message, args: args } as MatchedCommand);
+      await color.execute({ message: message as Message, args: args } as ExtractedCommand);
       expect(addSpy.called).to.be.true;
     });
   });

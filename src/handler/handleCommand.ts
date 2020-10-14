@@ -1,12 +1,12 @@
-import { InvalidCommand, MatchedCommand } from "../matcher";
+import type { InvalidCommand, ExtractedCommand } from "../matcher";
 
 export const handleCommand = async (
-  commandEvent: MatchedCommand | InvalidCommand
+  commandEvent: ExtractedCommand | InvalidCommand
 ): Promise<void> => {
   try {
     if (commandEvent.matched) {
       await commandEvent.command.execute(commandEvent);
-    } else if (commandEvent.details) {
+    } else {
       await commandEvent.message.reply(commandEvent.details);
     }
   } catch (error) {

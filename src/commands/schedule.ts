@@ -14,6 +14,7 @@ export const schedule: CommandWithInit = {
     }
   },
   name: "schedule",
+  permission: 1,
   description: "Schedule reoccuring messages",
   definition: "schedule :name :day :time :channelStr *",
   help:

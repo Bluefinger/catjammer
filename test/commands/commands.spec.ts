@@ -3,7 +3,7 @@ import type { Command } from "../../src/commands/type";
 import { expect } from "chai";
 import { spy } from "sinon";
 import { Message } from "discord.js";
-import { MatchedCommand } from "../../src/matcher/types";
+import { ExtractedCommand } from "../../src/matcher";
 
 describe("commands command", () => {
   describe("execute", () => {
@@ -21,17 +21,17 @@ describe("commands command", () => {
     };
     afterEach(() => replySpy.resetHistory());
     it("should fire reply after building the string", async () => {
-      await commandsList.execute(command as MatchedCommand);
+      await commandsList.execute(command as ExtractedCommand);
       expect(replySpy.called).to.be.true;
     });
 
     it("should reply with ping name and description", async () => {
-      await commandsList.execute(command as MatchedCommand);
+      await commandsList.execute(command as ExtractedCommand);
       expect(replySpy.firstCall.args[0]).to.be.a("string").that.includes("ping - Ping!");
     });
 
     it("should contain itself in the command list", async () => {
-      await commandsList.execute(command as MatchedCommand);
+      await commandsList.execute(command as ExtractedCommand);
       expect(replySpy.firstCall.args[0])
         .to.be.a("string")
         .that.includes("commands - Lists the available commands to the user");

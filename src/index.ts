@@ -1,15 +1,16 @@
+import type { CommandWithInit } from "./commands/type";
+import type { Config, Services } from "./index.types";
 import { readFileSync, createWriteStream } from "fs";
 import { Client } from "discord.js";
 import { commands } from "./commands";
-import { Config, createMessageStream, handleCommand } from "./handler";
-import { createCommandMatcher } from "./matcher/createMatcher";
-import { Store, Logger, Scheduler } from "./services";
-import type { CommandWithInit } from "./commands/type";
+import { handleCommand } from "./handler";
+import { createMessageStream } from "./streams";
+import { Store, Logger, Scheduler, Permissions } from "./services";
 
 const config = JSON.parse(readFileSync("./config.json", "utf-8")) as Config;
 
 const client = new Client();
-const services = {
+const services: Services = {
   store: new Store({
     uri: "sqlite://catjammer.sqlite",
     busyTimeout: 10000,
@@ -19,28 +20,25 @@ const services = {
     stderr: createWriteStream("./error.log", { flags: "a" }),
   }),
   scheduler: new Scheduler(),
+  permissions: new Permissions(),
 };
 
-const eventStream = createMessageStream(
-  config,
-  client,
-  createCommandMatcher(config, commands, services)
-);
+const eventStream = createMessageStream(config, client, commands, services);
 
 const eventSubscription = eventStream.subscribe({
   next: handleCommand,
 });
 
-const cleanup = (msg = "CatJammer closing cleanly") => {
+const cleanup = (msg = "CatJammer closing cleanly", code = 0) => {
   eventSubscription.unsubscribe();
   client.destroy();
   services.log.info(msg);
+  process.exit(code);
 };
 
 const onError = (err: unknown) => {
   services.log.error("!!FATAL!!", err);
-  cleanup("CatJammer is closing unexpectedly");
-  process.exit(1);
+  cleanup("CatJammer is closing unexpectedly", 1);
 };
 
 services.store.onError(onError);

@@ -1,18 +1,13 @@
 import type { Message } from "discord.js";
 import type { Command } from "../commands/type";
-import type { Logger, Store, Scheduler } from "../services";
+import type { RoutedCommand } from "../router";
+import type { Services } from "../index.types";
 
 /**
- * Command Matcher. Takes a message input and yields either
- * `MatchedCommand` or `InvalidCommand` results
+ * Argument Matcher. Takes a message input and yields either
+ * `ExtractedCommand` or `InvalidCommand` results
  */
-export type CommandMatcher = (message: Message) => MatchedCommand | InvalidCommand;
-
-export interface Services {
-  readonly store: Store;
-  readonly log: Logger;
-  readonly scheduler: Scheduler;
-}
+export type ArgumentExtractor = (command: RoutedCommand) => ExtractedCommand | InvalidCommand;
 
 interface BaseCommand {
   readonly message: Message;
@@ -21,7 +16,7 @@ interface BaseCommand {
 
 type ReadonlyList<T> = Readonly<Readonly<T>[]>;
 
-export interface MatchedCommand extends BaseCommand {
+export interface ExtractedCommand extends BaseCommand {
   readonly matched: true;
   readonly commands: ReadonlyList<Command>;
   readonly command: Command;
@@ -29,11 +24,10 @@ export interface MatchedCommand extends BaseCommand {
 }
 export interface InvalidCommand extends BaseCommand {
   readonly matched: false;
-  readonly details: string | null;
+  readonly details: string;
 }
 
-export interface CommandDefinition {
-  readonly command: Command;
+export interface ArgumentDefinition {
   readonly match: RegExp;
   readonly args: string[];
 }

@@ -5,6 +5,7 @@ export const cancel: Command = {
   name: "cancel",
   description: "Cancels a scheduled message",
   definition: "cancel :name",
+  permission: 1,
   help: "use !cancel <name>\n <name> name of the scheduled message you want to cancel",
   async execute({ message, args, services }): Promise<void> {
     const { name } = args;
