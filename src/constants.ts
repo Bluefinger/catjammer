@@ -4,9 +4,9 @@ export const enum PermissionType {
 }
 
 export const enum PermissionLevels {
-  BANNED = -1,
-  NORMAL,
-  OFFICER,
+  BANNED = -9,
+  NORMAL = 0,
+  OFFICER = 1,
 }
 
 export type SetPermission = PermissionLevels.BANNED | PermissionLevels.OFFICER;

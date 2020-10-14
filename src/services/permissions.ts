@@ -1,4 +1,4 @@
-import { AllowablePermission, PermissionLevels, SetPermission, PermissionType } from "../constants";
+import { PermissionLevels, SetPermission, PermissionType } from "../constants";
 
 export class Permissions {
   private users = new Map<string, SetPermission>();
@@ -9,7 +9,7 @@ export class Permissions {
   removePermission(key: string, type: PermissionType): boolean {
     return this[type].delete(key);
   }
-  hasPermission(key: string, level: AllowablePermission, type: PermissionType): boolean {
-    return (this[type].get(key) ?? PermissionLevels.NORMAL) >= level;
+  getPermission(key: string, type: PermissionType): PermissionLevels {
+    return this[type].get(key) ?? PermissionLevels.NORMAL;
   }
 }

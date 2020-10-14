@@ -1,5 +1,5 @@
 import { PermissionLevels, PermissionType, SetPermission } from "../constants";
-import type { Services } from "../matcher";
+import type { Services } from "../index.types";
 import type { CommandWithInit } from "./type";
 
 const isRole = /<@&\d+>/g;
@@ -22,9 +22,12 @@ const grantPermission = async (
   const key = `${guildId}::${id}`;
   const storedKey = `permissions::${guildId}`;
   const storedPermissions = (await store.get<StoredPermissions>(storedKey)) || [];
-  await store.set<StoredPermissions>(storedKey, [...storedPermissions, [key, level, type]]);
-  permissions.assignPermission(key, level, type);
-  return level === PermissionLevels.BANNED ? "BANNED from using the bot" : "Permission granted";
+  if (!storedPermissions.some(([storedKey]) => storedKey === key)) {
+    await store.set<StoredPermissions>(storedKey, [...storedPermissions, [key, level, type]]);
+    permissions.assignPermission(key, level, type);
+    return level === PermissionLevels.BANNED ? "BANNED from using the bot" : "Permission granted";
+  }
+  return "Permission already granted";
 };
 
 const removePermission = async (

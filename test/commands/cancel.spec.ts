@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { cancel } from "../../src/commands/cancel";
 import { Scheduler } from "../../src/services";
-import { MatchedCommand } from "../../src/matcher/types";
+import { ExtractedCommand } from "../../src/matcher";
 import { fake, spy } from "sinon";
 import { Message } from "discord.js";
 import { Job } from "node-schedule";
@@ -29,7 +29,7 @@ describe("cancel command", () => {
         reply: replySpy,
         guild: null,
       };
-      await cancel.execute({ message: message as Message, args } as MatchedCommand);
+      await cancel.execute({ message: message as Message, args } as ExtractedCommand);
       expect(replySpy.calledWith("Must be used in a guild channel")).to.be.true;
     });
 
@@ -38,7 +38,7 @@ describe("cancel command", () => {
         reply: replySpy,
         guild: { name: "test" },
       };
-      await cancel.execute({ message: message as Message, args, services } as MatchedCommand);
+      await cancel.execute({ message: message as Message, args, services } as ExtractedCommand);
       expect(replySpy.calledWith("Job does not exist")).to.be.true;
     });
     it("successfully call cancel with correct arguments", async () => {
@@ -50,7 +50,7 @@ describe("cancel command", () => {
       };
       const job: unknown = { cancel: fake() };
       services.scheduler.jobStore.set("guildtest", job as Job);
-      await cancel.execute({ message: message as Message, args, services } as MatchedCommand);
+      await cancel.execute({ message: message as Message, args, services } as ExtractedCommand);
       expect(cancelSpy.calledWith("test", "guild") && replySpy.calledWith("Job removed")).to.be
         .true;
     });

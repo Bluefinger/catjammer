@@ -1,6 +1,7 @@
 import { Client } from "discord.js";
 import { AllowablePermission } from "../constants";
-import type { ExtractedCommand, Services } from "../matcher";
+import type { ExtractedCommand } from "../matcher";
+import type { Services } from "../index.types";
 
 export interface Command {
   readonly name: string;

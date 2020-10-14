@@ -1,7 +1,7 @@
-import { Command } from "../commands/type";
-import { ArgumentExtractor, CommandDefinition, Services } from "./types";
-import { createCommandDefinition } from "./createDefinitions";
-import { Config } from "../handler";
+import type { Command } from "../commands/type";
+import type { ArgumentExtractor, ArgumentDefinition } from "./types";
+import type { Config, Services } from "../index.types";
+import { createArgumentDefinition } from "./createDefinitions";
 
 const extractMatchedArguments = (matches: RegExpExecArray, args: string[]) =>
   args.reduce<Record<string, string>>((matched, arg, index) => {
@@ -19,9 +19,9 @@ export const createArgumentMatcher = (
   commands: Command[],
   services: Services
 ): ArgumentExtractor => {
-  const indexedCommands = commands.reduce<Record<string, CommandDefinition>>(
+  const indexedCommands = commands.reduce<Record<string, ArgumentDefinition>>(
     (definitions, command) => {
-      definitions[command.name] = createCommandDefinition(config, command);
+      definitions[command.name] = createArgumentDefinition(config, command);
       return definitions;
     },
     {}

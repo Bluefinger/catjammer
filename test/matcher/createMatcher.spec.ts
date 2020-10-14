@@ -1,9 +1,8 @@
 import { expect } from "chai";
-import { Message } from "discord.js";
-import { Command } from "../../src/commands/type";
-import { Config } from "../../src/handler";
-import { createCommandMatcher } from "../../src/matcher/createMatcher";
-import type { Services } from "../../src/matcher";
+import type { Command } from "../../src/commands/type";
+import type { Config, Services } from "../../src/index.types";
+import { createArgumentMatcher } from "../../src/matcher/createMatcher";
+import type { RoutedCommand } from "../../src/router";
 
 interface FakeMessage {
   content: string;
@@ -39,12 +38,12 @@ const cases: TestCase[] = [
       parenthesis: ['"', '"'],
     },
     message: { content: "!ping" },
-    command: { definition: "ping" },
+    command: { name: "ping", definition: "ping" },
     expected: {
       matched: true,
-      commands: [{ definition: "ping" }],
+      commands: [{ name: "ping", definition: "ping" }],
       message: { content: "!ping" },
-      command: { definition: "ping" },
+      command: { name: "ping", definition: "ping" },
       args: {},
       services: {},
     },
@@ -56,12 +55,12 @@ const cases: TestCase[] = [
       parenthesis: ['"', '"'],
     },
     message: { content: "!ping me" },
-    command: { definition: "ping :id" },
+    command: { name: "ping", definition: "ping :id" },
     expected: {
       matched: true,
       message: { content: "!ping me" },
-      command: { definition: "ping :id" },
-      commands: [{ definition: "ping :id" }],
+      command: { name: "ping", definition: "ping :id" },
+      commands: [{ name: "ping", definition: "ping :id" }],
       args: { id: "me" },
       services: {},
     },
@@ -73,12 +72,12 @@ const cases: TestCase[] = [
       parenthesis: ['"', '"'],
     },
     message: { content: "!ping me all the things!" },
-    command: { definition: "ping *" },
+    command: { name: "ping", definition: "ping *" },
     expected: {
       matched: true,
       message: { content: "!ping me all the things!" },
-      command: { definition: "ping *" },
-      commands: [{ definition: "ping *" }],
+      command: { name: "ping", definition: "ping *" },
+      commands: [{ name: "ping", definition: "ping *" }],
       args: { message: "me all the things!" },
       services: {},
     },
@@ -90,12 +89,12 @@ const cases: TestCase[] = [
       parenthesis: ['"', '"'],
     },
     message: { content: "!ping <@!123456789>" },
-    command: { definition: "ping @name" },
+    command: { name: "ping", definition: "ping @name" },
     expected: {
       matched: true,
       message: { content: "!ping <@!123456789>" },
-      command: { definition: "ping @name" },
-      commands: [{ definition: "ping @name" }],
+      command: { name: "ping", definition: "ping @name" },
+      commands: [{ name: "ping", definition: "ping @name" }],
       args: { name: "<@!123456789>" },
       services: {},
     },
@@ -107,12 +106,12 @@ const cases: TestCase[] = [
       parenthesis: ['"', '"'],
     },
     message: { content: "!ping <@&123456789>" },
-    command: { definition: "ping @name" },
+    command: { name: "ping", definition: "ping @name" },
     expected: {
       matched: true,
       message: { content: "!ping <@&123456789>" },
-      command: { definition: "ping @name" },
-      commands: [{ definition: "ping @name" }],
+      command: { name: "ping", definition: "ping @name" },
+      commands: [{ name: "ping", definition: "ping @name" }],
       args: { name: "<@&123456789>" },
       services: {},
     },
@@ -124,12 +123,12 @@ const cases: TestCase[] = [
       parenthesis: ['"', '"'],
     },
     message: { content: '!ping "A User#3434"' },
-    command: { definition: 'ping "name' },
+    command: { name: "ping", definition: 'ping "name' },
     expected: {
       matched: true,
       message: { content: '!ping "A User#3434"' },
-      command: { definition: 'ping "name' },
-      commands: [{ definition: 'ping "name' }],
+      command: { name: "ping", definition: 'ping "name' },
+      commands: [{ name: "ping", definition: 'ping "name' }],
       args: { name: "A User#3434" },
       services: {},
     },
@@ -141,12 +140,12 @@ const cases: TestCase[] = [
       parenthesis: ['"', '"'],
     },
     message: { content: '!ping 89-() "A User#3434" \nA Message to\nsend' },
-    command: { definition: 'ping :id "name *' },
+    command: { name: "ping", definition: 'ping :id "name *' },
     expected: {
       matched: true,
       message: { content: '!ping 89-() "A User#3434" \nA Message to\nsend' },
-      command: { definition: 'ping :id "name *' },
-      commands: [{ definition: 'ping :id "name *' }],
+      command: { name: "ping", definition: 'ping :id "name *' },
+      commands: [{ name: "ping", definition: 'ping :id "name *' }],
       args: { id: "89-()", name: "A User#3434", message: "A Message to\nsend" },
       services: {},
     },
@@ -158,12 +157,12 @@ const cases: TestCase[] = [
       parenthesis: ['"', '"'],
     },
     message: { content: '!ping \n aaaa  "A User#3434"' },
-    command: { definition: 'ping :id "name' },
+    command: { name: "ping", definition: 'ping :id "name' },
     expected: {
       matched: true,
       message: { content: '!ping \n aaaa  "A User#3434"' },
-      command: { definition: 'ping :id "name' },
-      commands: [{ definition: 'ping :id "name' }],
+      command: { name: "ping", definition: 'ping :id "name' },
+      commands: [{ name: "ping", definition: 'ping :id "name' }],
       args: { id: "aaaa", name: "A User#3434" },
       services: {},
     },
@@ -175,12 +174,12 @@ const cases: TestCase[] = [
       parenthesis: ['"', '"'],
     },
     message: { content: '?!c ping \n aaaa  "A User#3434"' },
-    command: { definition: 'ping :id "name' },
+    command: { name: "ping", definition: 'ping :id "name' },
     expected: {
       matched: true,
       message: { content: '?!c ping \n aaaa  "A User#3434"' },
-      command: { definition: 'ping :id "name' },
-      commands: [{ definition: 'ping :id "name' }],
+      command: { name: "ping", definition: 'ping :id "name' },
+      commands: [{ name: "ping", definition: 'ping :id "name' }],
       args: { id: "aaaa", name: "A User#3434" },
       services: {},
     },
@@ -192,73 +191,43 @@ const cases: TestCase[] = [
       parenthesis: ["<", ">"],
     },
     message: { content: "!ping <A User#3434>" },
-    command: { definition: 'ping "name' },
+    command: { name: "ping", definition: 'ping "name' },
     expected: {
       matched: true,
       message: { content: "!ping <A User#3434>" },
-      command: { definition: 'ping "name' },
-      commands: [{ definition: 'ping "name' }],
+      command: { name: "ping", definition: 'ping "name' },
+      commands: [{ name: "ping", definition: 'ping "name' }],
       args: { name: "A User#3434" },
       services: {},
     },
   },
   {
-    description: "does not match a non-existant command",
+    description: "does not match a badly formed command",
     config: {
       prefix: "!",
       parenthesis: ['"', '"'],
     },
-    message: { content: "!pingu me all the things!" },
-    command: { definition: "ping *" },
+    message: { content: "!ping" },
+    command: { name: "ping", definition: "ping :me" },
     expected: {
       matched: false,
-      message: { content: "!pingu me all the things!" },
-      details: "Invalid !pingu command. Please try again.",
-      services: {},
-    },
-  },
-  {
-    description: "does not match a badly formed command or non command messages",
-    config: {
-      prefix: "!",
-      parenthesis: ['"', '"'],
-    },
-    message: { content: "!!!!" },
-    command: { definition: "ping *" },
-    expected: {
-      matched: false,
-      message: { content: "!!!!" },
-      details: null,
-      services: {},
-    },
-  },
-  {
-    description: "does not partially match an invalid command",
-    config: {
-      prefix: "!",
-      parenthesis: ['"', '"'],
-    },
-    message: { content: "!pingu" },
-    command: { definition: "ping" },
-    expected: {
-      matched: false,
-      message: { content: "!pingu" },
-      details: "Invalid !pingu command. Please try again.",
+      message: { content: "!ping" },
+      details: "Invalid !ping command. Please try again.",
       services: {},
     },
   },
 ];
 
 describe("createMatcher.ts", () => {
-  describe("createCommandMatcher", () => {
+  describe("createArgumentMatcher", () => {
     cases.forEach(({ description, config, message, command, expected }) => {
       it(description, () => {
-        const matcher = createCommandMatcher(
+        const matcher = createArgumentMatcher(
           config as Config,
           [command as Command],
           {} as Services
         );
-        const result = matcher(message as Message);
+        const result = matcher({ message, command } as RoutedCommand);
         expect(result).to.deep.equal(expected);
       });
     });

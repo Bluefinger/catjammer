@@ -1,17 +1,16 @@
+import type { CommandWithInit } from "./commands/type";
+import type { Config, Services } from "./index.types";
 import { readFileSync, createWriteStream } from "fs";
 import { Client } from "discord.js";
 import { commands } from "./commands";
-import { Config, createMessageStream, handleCommand } from "./handler";
-import { createArgumentMatcher } from "./matcher/createMatcher";
+import { handleCommand } from "./handler";
+import { createMessageStream } from "./streams";
 import { Store, Logger, Scheduler, Permissions } from "./services";
-import type { CommandWithInit } from "./commands/type";
-import { createCommandRouter } from "./matcher/createCommandRouter";
-import { createPermissionGuard } from "./matcher/permissionGuard";
 
 const config = JSON.parse(readFileSync("./config.json", "utf-8")) as Config;
 
 const client = new Client();
-const services = {
+const services: Services = {
   store: new Store({
     uri: "sqlite://catjammer.sqlite",
     busyTimeout: 10000,
@@ -25,13 +24,7 @@ const services = {
 
 };
 
-const eventStream = createMessageStream(
-  config,
-  client,
-  createCommandRouter(config, commands),
-  createPermissionGuard(services),
-  createArgumentMatcher(config, commands, services)
-);
+const eventStream = createMessageStream(config, client, commands, services);
 
 const eventSubscription = eventStream.subscribe({
   next: handleCommand,

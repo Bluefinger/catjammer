@@ -1,4 +1,4 @@
-import { InvalidCommand, ExtractedCommand } from "../matcher";
+import type { InvalidCommand, ExtractedCommand } from "../matcher";
 
 export const handleCommand = async (
   commandEvent: ExtractedCommand | InvalidCommand

@@ -1,7 +1,7 @@
 import type { Command } from "../commands/type";
-import type { Config } from "../handler";
-import { createCommandNameDefinition } from "./createDefinitions";
+import type { Config } from "../index.types";
 import type { CommandRouter } from "./types";
+import { createCommandNameDefinition } from "../matcher";
 
 export const createCommandRouter = ({ prefix }: Config, commands: Command[]): CommandRouter => {
   const commandCheck = createCommandNameDefinition(prefix);
