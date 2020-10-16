@@ -64,7 +64,7 @@ describe("Permission command", () => {
           services,
           args: {
             modifier: "give",
-            role: "<@!112>",
+            role: "<@112>",
           },
         },
         "Permission granted",

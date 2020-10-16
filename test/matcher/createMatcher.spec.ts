@@ -88,6 +88,23 @@ const cases: TestCase[] = [
       prefix: "!",
       parenthesis: ['"', '"'],
     },
+    message: { content: "!ping <@123456789>" },
+    command: { name: "ping", definition: "ping @name" },
+    expected: {
+      matched: true,
+      message: { content: "!ping <@123456789>" },
+      command: { name: "ping", definition: "ping @name" },
+      commands: [{ name: "ping", definition: "ping @name" }],
+      args: { name: "<@123456789>" },
+      services: {},
+    },
+  },
+  {
+    description: "matches a command with a nickname value",
+    config: {
+      prefix: "!",
+      parenthesis: ['"', '"'],
+    },
     message: { content: "!ping <@!123456789>" },
     command: { name: "ping", definition: "ping @name" },
     expected: {
@@ -113,6 +130,23 @@ const cases: TestCase[] = [
       command: { name: "ping", definition: "ping @name" },
       commands: [{ name: "ping", definition: "ping @name" }],
       args: { name: "<@&123456789>" },
+      services: {},
+    },
+  },
+  {
+    description: "matches a command with a room value",
+    config: {
+      prefix: "!",
+      parenthesis: ['"', '"'],
+    },
+    message: { content: "!ping <#123456789>" },
+    command: { name: "ping", definition: "ping #room" },
+    expected: {
+      matched: true,
+      message: { content: "!ping <#123456789>" },
+      command: { name: "ping", definition: "ping #room" },
+      commands: [{ name: "ping", definition: "ping #room" }],
+      args: { room: "<#123456789>" },
       services: {},
     },
   },
