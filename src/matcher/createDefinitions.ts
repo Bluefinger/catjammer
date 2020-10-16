@@ -22,6 +22,11 @@ const ARGUMENT = /:\w+/g;
  */
 const NAME = /@\w+/g;
 /**
+ * Matches a `#room` component in a definition. Names are for capturing room
+ * mentions, targetting the snowflake format to ensure correct usage.
+ */
+const ROOM = /#\w+/g;
+/**
  * Matches a `"text` component. This is to capture a block of text within a
  * parenthesis section. Text blocks don't capture new lines.
  */
@@ -49,7 +54,12 @@ const ARGUMENT_MATCH = "(\\S+)";
  * Matches a defined username/role in a command. Usernames/role provided by mentions
  * come in a specific format
  */
-const NAME_MATCH = "(<@(?:!|&)\\d+>)";
+const NAME_MATCH = "(<@(?:!|&)?\\d+>)";
+/**
+ * Matches a defined room in a command. Rooms provided by mentions
+ * come in a specific format
+ */
+const ROOM_MATCH = "(<#\\d+>)";
 /**
  * Matches everything on a catch-all point. Includes linebreaks.
  */
@@ -82,6 +92,10 @@ export const createArgumentDefinition = (
     .replace(NAME, (match) => {
       addToArguments(args, match);
       return NAME_MATCH;
+    })
+    .replace(ROOM, (match) => {
+      addToArguments(args, match);
+      return ROOM_MATCH;
     })
     .replace(PAREN, (match) => {
       addToArguments(args, match);

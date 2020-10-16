@@ -1,6 +1,7 @@
 import type { CommandWithInit } from "./type";
 import type { StorableJob } from "../services/schedule";
 import { validateDay, validateTime, days, isTextChannel } from "./helpers/scheduleValidators";
+import { extractId } from "./helpers/mentions";
 
 export const schedule: CommandWithInit = {
   init: async (client, services) => {
@@ -16,11 +17,11 @@ export const schedule: CommandWithInit = {
   name: "schedule",
   permission: 1,
   description: "Schedule reoccuring messages",
-  definition: "schedule :name :day :time :channelStr *",
+  definition: "schedule :name :day :time #channel *",
   help:
-    "use !schedule <name> <day> <time> <channel> <message>\n<name> is used for cancelling the message, must not have spaces in it\n<day> should be spelt with full name and capital first letter\n<time> ##:## 24 hour format\n<channel>name as appears of channel\n<message>rest of command should just be your message",
+    "use !schedule <name> <day> <time> <#channel> <message>\n<name> is used for cancelling the message, must not have spaces in it\n<day> should be spelt with full name and capital first letter\n<time> ##:## 24 hour format\n<channel>name as appears of channel\n<message>rest of command should just be your message",
   async execute({ message: command, args, services }): Promise<void> {
-    const { name, day, time, channelStr, message } = args;
+    const { name, day, time, channel, message } = args;
     if (!validateDay(day)) {
       await command.reply("Invalid day argument. Day must be spelt in full");
       return;
@@ -36,8 +37,10 @@ export const schedule: CommandWithInit = {
       return;
     }
 
+    const channelId = extractId(channel);
+
     const { guild } = command.channel;
-    const targetChannel = guild.channels.cache.find((channel) => channel.name === channelStr);
+    const targetChannel = guild.channels.cache.find(({ id }) => id === channelId);
 
     if (!targetChannel) {
       await command.reply(`Channel does not exist`);
@@ -49,7 +52,7 @@ export const schedule: CommandWithInit = {
       return;
     }
 
-    if (services.scheduler.has(name, targetChannel.guild.name)) {
+    if (services.scheduler.has(name, targetChannel.guild.id)) {
       await command.reply("name already in use");
       return;
     }
@@ -67,7 +70,7 @@ export const schedule: CommandWithInit = {
     const storableJob: StorableJob = {
       name,
       params,
-      message: { guild: targetChannel.guild.name, channel: targetChannel.name, content: message },
+      message: { guild: targetChannel.guild.id, channel: targetChannel.id, content: message },
     };
     jobs.push(storableJob);
     await services.store.set("jobs", jobs);

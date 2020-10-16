@@ -55,15 +55,17 @@ describe("schedule command", () => {
     const fakeChannel: unknown = {
       name: "test",
       type: "text",
+      id: "1234",
       guild: {
-        name: "test",
+        id: "1111",
       },
     };
     const wrongChannel: unknown = {
       name: "wrong",
       type: "voice",
+      id: "1235",
       guild: {
-        name: "test",
+        id: "1111",
       },
     };
     const channelCollection = new Collection<Snowflake, GuildChannel>();
@@ -102,7 +104,7 @@ describe("schedule command", () => {
         name: "test",
         day: "Wrong",
         time: "01:20",
-        channelStr: "test",
+        channel: "<#1234>",
         message: "blah blah",
       };
 
@@ -116,7 +118,7 @@ describe("schedule command", () => {
         name: "test",
         day: "Thursday",
         time: "01:20",
-        channelStr: "test",
+        channel: "<#1234>",
         message: "blah blah",
       };
       await schedule.execute({ message: message as Message, args, services } as ExtractedCommand);
@@ -132,7 +134,7 @@ describe("schedule command", () => {
         name: "test",
         day: "Thursday",
         time: "01:20",
-        channelStr: "fake",
+        channel: "<#1233>",
         message: "blah blah",
       };
       await schedule.execute({ message: message as Message, args, services } as ExtractedCommand);
@@ -144,7 +146,7 @@ describe("schedule command", () => {
         name: "test",
         day: "Thursday",
         time: "01:20",
-        channelStr: "wrong",
+        channel: "<#1235>",
         message: "blah blah",
       };
       await schedule.execute({ message: message as Message, args, services } as ExtractedCommand);
@@ -157,7 +159,7 @@ describe("schedule command", () => {
         name: "test",
         day: "Thursday",
         time: "01:20",
-        channelStr: "test",
+        channel: "<#1234>",
         message: "blah blah",
       };
       await schedule.execute({ message: message as Message, args, services } as ExtractedCommand);
@@ -172,7 +174,7 @@ describe("schedule command", () => {
         name: "test",
         day: "Thursday",
         time: "01:20",
-        channelStr: "test",
+        channel: "<#1234>",
         message: "blah blah",
       };
       await schedule.execute({ message: message as Message, args, services } as ExtractedCommand);
