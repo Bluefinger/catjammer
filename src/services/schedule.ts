@@ -28,8 +28,7 @@ export class Scheduler {
     const job = this.scheduleJob(params, () => {
       void target.send(message);
     });
-    const guildName = target.guild.name;
-    this.jobStore.set(guildName + name, job);
+    this.jobStore.set(target.guild.id + name, job);
   }
 
   scheduleFromStore(storeJob: StorableJob, client: Client): void {
