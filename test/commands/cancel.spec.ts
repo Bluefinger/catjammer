@@ -46,7 +46,7 @@ describe("cancel command", () => {
       await services.store.set("jobs", [storableJob]);
       const message: unknown = {
         reply: replySpy,
-        guild: { name: "guild" },
+        guild: { id: "guild" },
       };
       const job: unknown = { cancel: fake() };
       services.scheduler.jobStore.set("guildtest", job as Job);
