@@ -14,14 +14,14 @@ export const cancel: Command = {
       await message.reply("Must be used in a guild channel");
       return;
     }
-    const guildName = message.guild.name;
+    const guildName = message.guild.id;
 
-    if (!services.scheduler.has(name, message.guild.name)) {
+    if (!services.scheduler.has(name, message.guild.id)) {
       await message.reply("Job does not exist");
       return;
     }
 
-    services.scheduler.cancel(name, message.guild.name);
+    services.scheduler.cancel(name, message.guild.id);
 
     const jobs = await services.store.get<StorableJob[]>("jobs");
     if (!jobs) {

@@ -33,13 +33,11 @@ export class Scheduler {
   }
 
   scheduleFromStore(storeJob: StorableJob, client: Client): void {
-    const guild = client.guilds.cache.find((guild) => guild.name === storeJob.message.guild);
+    const guild = client.guilds.cache.find((guild) => guild.id === storeJob.message.guild);
     if (!guild) {
       throw new Error("Guild not found");
     }
-    const channel = guild.channels.cache.find(
-      (channel) => channel.name === storeJob.message.channel
-    );
+    const channel = guild.channels.cache.find((channel) => channel.id === storeJob.message.channel);
     if (!channel) {
       throw new Error("Channel not found");
     }
