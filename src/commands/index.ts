@@ -7,6 +7,7 @@ import { color } from "./color";
 import { cancel } from "./cancel";
 import { permission } from "./permission";
 import { jobs } from "./jobs";
+import { greeting } from "./greeting";
 
 export const commands: Command[] = [
   schedule,
@@ -17,4 +18,5 @@ export const commands: Command[] = [
   cancel,
   permission,
   jobs,
+  greeting,
 ];

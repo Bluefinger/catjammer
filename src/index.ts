@@ -3,8 +3,8 @@ import type { Config, Services } from "./index.types";
 import { readFileSync, createWriteStream } from "fs";
 import { Client } from "discord.js";
 import { commands } from "./commands";
-import { handleCommand } from "./handler";
-import { createMessageStream } from "./streams";
+import { handleCommand, handleGreeting } from "./handler";
+import { createMessageStream, createWelcomeStream } from "./streams";
 import { Store, Logger, Scheduler, Permissions } from "./services";
 
 const config = JSON.parse(readFileSync("./config.json", "utf-8")) as Config;
@@ -23,14 +23,17 @@ const services: Services = {
   permissions: new Permissions(),
 };
 
-const eventStream = createMessageStream(config, client, commands, services);
-
-const eventSubscription = eventStream.subscribe({
-  next: handleCommand,
-});
+const subscriptions = [
+  createMessageStream(config, client, commands, services).subscribe({
+    next: handleCommand,
+  }),
+  createWelcomeStream(client).subscribe({
+    next: handleGreeting(services),
+  }),
+];
 
 const cleanup = (msg = "CatJammer closing cleanly", code = 0) => {
-  eventSubscription.unsubscribe();
+  subscriptions.forEach((subscription) => subscription.unsubscribe());
   client.destroy();
   services.log.info(msg);
   process.exit(code);
@@ -47,9 +50,12 @@ client.once("ready", () => {
   Promise.all(
     commands
       .filter((command): command is CommandWithInit => "init" in command)
-      .map((command) => command.init(client, services))
+      .map(async (command) => {
+        await command.init(client, services);
+        services.log.info(`${command.name} has initialised successfully.`);
+      })
   )
-    .then(() => services.log.info("CatJammer is ready"))
+    .then(() => services.log.info("CatJammer is ready!"))
     .catch(onError);
 });
 
