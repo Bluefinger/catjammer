@@ -1,7 +1,6 @@
-import type { Message } from "discord.js";
 import type { Command } from "../commands/type";
 import type { RoutedCommand } from "../router";
-import type { Services } from "../index.types";
+import type { GuildMessage, Services } from "../index.types";
 
 /**
  * Argument Matcher. Takes a message input and yields either
@@ -10,7 +9,7 @@ import type { Services } from "../index.types";
 export type ArgumentExtractor = (command: RoutedCommand) => ExtractedCommand | InvalidCommand;
 
 interface BaseCommand {
-  readonly message: Message;
+  readonly message: GuildMessage;
   readonly services: Services;
 }
 

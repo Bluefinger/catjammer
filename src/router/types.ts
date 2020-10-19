@@ -1,9 +1,9 @@
-import type { Message } from "discord.js";
 import type { Command } from "../commands/type";
+import { GuildMessage } from "../index.types";
 
 export interface RoutedCommand {
-  message: Message;
+  message: GuildMessage;
   command: Command;
 }
 
-export type CommandRouter = (message: Message) => RoutedCommand | undefined;
+export type CommandRouter = (message: GuildMessage) => RoutedCommand | undefined;

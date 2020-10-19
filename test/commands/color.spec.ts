@@ -106,16 +106,6 @@ describe("color commands", () => {
       expect(replySpy.firstCall.args[0]).to.be.eql("Invalid hex value");
     });
 
-    it("should reject message not posted in a guild channel", async () => {
-      const args: Record<string, string> = { colorHex: "#000000" };
-      const message: unknown = { reply: replySpy, guild: null };
-      await color.execute({
-        message: message as Message,
-        args,
-      } as ExtractedCommand);
-      expect(replySpy.firstCall.args[0]).to.be.eql("Must be used in a guild channel");
-    });
-
     const cache = new Collection<Snowflake, Role>();
     cache.set(SnowflakeUtil.generate(), { name: "ehawjkhejkhe" } as Role);
     const fetchFake = fake.returns({ cache: cache });

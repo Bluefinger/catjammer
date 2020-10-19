@@ -1,7 +1,6 @@
 import { expect } from "chai";
-import type { Message } from "discord.js";
 import type { Command } from "../../src/commands/type";
-import type { Config } from "../../src/index.types";
+import type { Config, GuildMessage } from "../../src/index.types";
 import { createCommandRouter } from "../../src/router";
 
 describe("Routers", () => {
@@ -24,7 +23,7 @@ describe("Routers", () => {
 
     for (const [description, message, result] of tests) {
       it(description, () => {
-        expect(router(message as Message)).to.deep.equal(result);
+        expect(router(message as GuildMessage)).to.deep.equal(result);
       });
     }
   });

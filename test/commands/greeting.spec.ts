@@ -53,24 +53,5 @@ describe("greeting", () => {
         expect(reply.firstCall.args[0]).to.equal(result);
       });
     }
-
-    it("can only be used for guilds", async () => {
-      const message: unknown = {
-        channel: {
-          send: reply,
-        },
-        guild: null,
-      };
-      try {
-        await greeting.execute({
-          message,
-          services,
-          args: { modifier: "set", message: "Should not be set" } as Record<string, string>,
-        } as ExtractedCommand);
-        expect.fail("Should not execute successfully");
-      } catch (error) {
-        expect((error as Error).message).to.equal("Command must be used in a guild");
-      }
-    });
   });
 });

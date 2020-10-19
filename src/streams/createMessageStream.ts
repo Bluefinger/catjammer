@@ -5,7 +5,7 @@ import { InvalidCommand, ExtractedCommand, createArgumentMatcher } from "../matc
 import { createCommandRouter } from "../router";
 import { fromEventPattern, Observable } from "rxjs";
 import { filter, map } from "rxjs/operators";
-import { routeGuard, messageGuard, permissionGuard } from "../guards";
+import { routeGuard, messageGuard, permissionGuard, guildGuard } from "../guards";
 
 export const createMessageStream = (
   config: Config,
@@ -21,6 +21,7 @@ export const createMessageStream = (
       client.off("message", handler);
     }
   ).pipe(
+    filter(guildGuard),
     filter(messageGuard(config)),
     map(createCommandRouter(config, commands)),
     filter(routeGuard),

@@ -55,18 +55,16 @@ describe("createMessageStream.ts", () => {
         author: {
           bot: false,
           id: "id0",
-          presence: {
-            member: {
-              roles: {
-                highest: {
-                  id: "id3",
-                },
-              },
-            },
-          },
         },
         guild: {
           id: "guild",
+        },
+        member: {
+          roles: {
+            highest: {
+              id: "id3",
+            },
+          },
         },
         content: "!ping me",
       } as unknown;
@@ -109,18 +107,16 @@ describe("createMessageStream.ts", () => {
         author: {
           bot: false,
           id: "id0",
-          presence: {
-            member: {
-              roles: {
-                highest: {
-                  id: "id3",
-                },
-              },
-            },
-          },
         },
         guild: {
           id: "guild",
+        },
+        member: {
+          roles: {
+            highest: {
+              id: "id3",
+            },
+          },
         },
         content: "someone says hi",
       } as unknown;

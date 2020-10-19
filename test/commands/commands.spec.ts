@@ -20,30 +20,6 @@ const testCases: [
   string
 ][] = [
   [
-    "will error if used in a non-guild channel",
-    {
-      getPermission: () => PermissionLevels.NORMAL,
-    },
-    {
-      guild: null,
-      member: null,
-      reply,
-    },
-    "Must be used in a guild channel",
-  ],
-  [
-    "will error if used with a non-guild member",
-    {
-      getPermission: () => PermissionLevels.NORMAL,
-    },
-    {
-      guild: { id: "1111" },
-      member: null,
-      reply,
-    },
-    "Must be used in a guild channel",
-  ],
-  [
     "will return a list of all commands for a privileged user",
     {
       getPermission: () => PermissionLevels.OFFICER,

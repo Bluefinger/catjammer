@@ -16,11 +16,6 @@ export const color: Command = {
       return;
     }
 
-    if (!message.guild) {
-      await message.reply("Must be used in a guild channel");
-      return;
-    }
-
     const roles = await message.guild.roles.fetch();
 
     if (!roles) {
