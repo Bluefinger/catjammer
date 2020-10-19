@@ -3,18 +3,27 @@ import { validateDay, validateTime } from "../../src/commands/helpers/scheduleVa
 import type { ExtractedCommand } from "../../src/matcher";
 import type { Services } from "../../src/index.types";
 import { fake, spy } from "sinon";
-import { Message, Collection, Snowflake, SnowflakeUtil, GuildChannel, Client } from "discord.js";
+import {
+  Message,
+  Collection,
+  Snowflake,
+  SnowflakeUtil,
+  GuildChannel,
+  Client,
+  Guild,
+} from "discord.js";
 import { Store } from "../../src/services/store";
 import { schedule } from "../../src/commands/schedule";
 import { Scheduler, StorableJob } from "../../src/services";
 
 describe("schedule command", () => {
   describe("init", () => {
+    const cache = new Collection<Snowflake, Guild>();
+    cache.set(SnowflakeUtil.generate(), { id: "id" } as Guild);
+    cache.set(SnowflakeUtil.generate(), { id: "1111" } as Guild);
     const client: unknown = {
       guilds: {
-        cache: {
-          array: fake.returns([{ id: "id" }, { id: "1111" }]),
-        },
+        cache: cache,
       },
     };
     it("set jobs array if none already exists", async () => {

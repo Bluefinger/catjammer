@@ -5,14 +5,14 @@ import { extractId } from "./helpers/mentions";
 
 export const schedule: CommandWithInit = {
   init: async (client, services) => {
-    const guildPromises = client.guilds.cache.array().map(async ({ id }) => {
+    const guildPromises = client.guilds.cache.map(async ({ id }) => {
       const jobs = await services.store.get<StorableJob[]>(`jobs::${id}`);
       if (!jobs) {
         await services.store.set(`jobs::${id}`, []);
       } else {
-        jobs.forEach((job) => {
+        for (const job of jobs) {
           services.scheduler.scheduleFromStore(job, client);
-        });
+        }
       }
     });
     await Promise.all(guildPromises);
