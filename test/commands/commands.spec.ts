@@ -1,8 +1,8 @@
-import { commandsList } from "../../src/commands/commandsList";
 import type { Command } from "../../src/commands/type";
+import type { ExtractedCommand } from "../../src/matcher";
 import { expect } from "chai";
 import { spy } from "sinon";
-import { ExtractedCommand } from "../../src/matcher";
+import { commandsList } from "../../src/commands/commandsList";
 import { PermissionLevels } from "../../src/constants";
 
 const reply = spy();
@@ -22,7 +22,7 @@ const testCases: [
   [
     "will error if used in a non-guild channel",
     {
-      getPermission: () => 0,
+      getPermission: () => PermissionLevels.NORMAL,
     },
     {
       guild: null,
@@ -34,7 +34,7 @@ const testCases: [
   [
     "will error if used with a non-guild member",
     {
-      getPermission: () => 0,
+      getPermission: () => PermissionLevels.NORMAL,
     },
     {
       guild: { id: "1111" },
