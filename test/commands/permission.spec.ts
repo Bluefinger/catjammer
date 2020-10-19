@@ -112,23 +112,6 @@ describe("Permission command", () => {
         "Permission already granted",
       ],
       [
-        "must be used in a guild channel",
-        {
-          message: {
-            reply,
-            channel: {
-              send: reply,
-            },
-          },
-          services,
-          args: {
-            modifier: "give",
-            role: "<@&113>",
-          },
-        },
-        "Must be used in a guild channel",
-      ],
-      [
         "disallows permissions of guild owners to be modified",
         {
           message: {

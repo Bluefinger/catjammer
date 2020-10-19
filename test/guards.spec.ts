@@ -1,8 +1,8 @@
 import { expect } from "chai";
 import type { Message } from "discord.js";
 import { PermissionLevels, PermissionType } from "../src/constants";
-import { messageGuard, permissionGuard, routeGuard } from "../src/guards";
-import type { Config, Services } from "../src/index.types";
+import { guildGuard, messageGuard, permissionGuard, routeGuard } from "../src/guards";
+import type { Config, GuildMessage, Services } from "../src/index.types";
 import type { RoutedCommand } from "../src/router";
 import { Permissions } from "../src/services";
 
@@ -28,7 +28,7 @@ describe("guards", () => {
     const guard = messageGuard({ prefix: "!" } as Config);
     for (const [description, payload, result] of messageGuardTests) {
       it(description, () => {
-        expect(guard(payload as Message)).to.equal(result);
+        expect(guard(payload as GuildMessage)).to.equal(result);
       });
     }
   });
@@ -52,34 +52,21 @@ describe("guards", () => {
 
     const permissionGuardTests: [string, unknown, boolean][] = [
       [
-        "should filter messages not from a guild",
-        {
-          message: {
-            author: {},
-            guild: null,
-          },
-          command: {},
-        },
-        false,
-      ],
-      [
         "should filter messages from a user without granted permissions",
         {
           message: {
             author: {
               id: "id0",
-              presence: {
-                member: {
-                  roles: {
-                    highest: {
-                      id: "id9",
-                    },
-                  },
-                },
-              },
             },
             guild: {
               id: "guild",
+            },
+            member: {
+              roles: {
+                highest: {
+                  id: "id9",
+                },
+              },
             },
           },
           command: {
@@ -94,18 +81,16 @@ describe("guards", () => {
           message: {
             author: {
               id: "id0",
-              presence: {
-                member: {
-                  roles: {
-                    highest: {
-                      id: "id1",
-                    },
-                  },
-                },
-              },
             },
             guild: {
               id: "guild",
+            },
+            member: {
+              roles: {
+                highest: {
+                  id: "id1",
+                },
+              },
             },
           },
           command: {
@@ -115,43 +100,21 @@ describe("guards", () => {
         true,
       ],
       [
-        "should filter messages from a user without a guild",
-        {
-          message: {
-            author: {
-              id: "id0",
-              presence: {
-                member: null,
-              },
-            },
-            guild: {
-              id: "guild",
-            },
-          },
-          command: {
-            permission: PermissionLevels.OFFICER,
-          },
-        },
-        false,
-      ],
-      [
         "should allow messages from a user with explicit permissions",
         {
           message: {
             author: {
               id: "id2",
-              presence: {
-                member: {
-                  roles: {
-                    highest: {
-                      id: "id0",
-                    },
-                  },
-                },
-              },
             },
             guild: {
               id: "guild",
+            },
+            member: {
+              roles: {
+                highest: {
+                  id: "id0",
+                },
+              },
             },
           },
           command: {
@@ -166,23 +129,19 @@ describe("guards", () => {
           message: {
             author: {
               id: "id4",
-              presence: {
-                member: {
-                  roles: {
-                    highest: {
-                      id: "id0",
-                    },
-                  },
-                },
-              },
             },
             guild: {
               id: "guild",
             },
+            member: {
+              roles: {
+                highest: {
+                  id: "id0",
+                },
+              },
+            },
           },
-          command: {
-            permission: PermissionLevels.NORMAL,
-          },
+          command: {},
         },
         false,
       ],
@@ -192,23 +151,19 @@ describe("guards", () => {
           message: {
             author: {
               id: "id0",
-              presence: {
-                member: {
-                  roles: {
-                    highest: {
-                      id: "id3",
-                    },
-                  },
-                },
-              },
             },
             guild: {
               id: "guild",
             },
+            member: {
+              roles: {
+                highest: {
+                  id: "id3",
+                },
+              },
+            },
           },
-          command: {
-            permission: PermissionLevels.NORMAL,
-          },
+          command: {},
         },
         false,
       ],
@@ -217,6 +172,19 @@ describe("guards", () => {
     for (const [description, payload, result] of permissionGuardTests) {
       it(description, () => {
         expect(guard(payload as RoutedCommand)).to.equal(result);
+      });
+    }
+  });
+  describe("guildGuard", () => {
+    const guildTests: [string, unknown, boolean][] = [
+      ["should reject messages without a guild", { guild: null, member: null }, false],
+      ["should reject messages without a member", { guild: {}, member: null }, false],
+      ["should allow messages with a guild and a member", { guild: {}, member: {} }, true],
+    ];
+
+    for (const [description, message, result] of guildTests) {
+      it(description, () => {
+        expect(guildGuard(message as Message)).to.equal(result);
       });
     }
   });

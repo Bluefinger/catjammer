@@ -10,10 +10,6 @@ export const cancel: Command = {
   async execute({ message, args, services }): Promise<void> {
     const { name } = args;
 
-    if (!message.guild) {
-      await message.reply("Must be used in a guild channel");
-      return;
-    }
     const guildName = message.guild.id;
 
     if (!services.scheduler.has(name, message.guild.id)) {

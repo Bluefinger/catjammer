@@ -75,10 +75,6 @@ export const permission: CommandWithInit = {
     await Promise.all(loading);
   },
   async execute({ message, services, args }) {
-    if (!message.guild) {
-      await message.reply("Must be used in a guild channel");
-      return;
-    }
     const { modifier, role } = args;
     const id = extractId(role);
     if (id === message.guild.ownerID) {

@@ -36,14 +36,6 @@ describe("jobs command", () => {
       await jobs.execute({ message, services } as ExtractedCommand);
       expect(replySpy.firstCall.args[0]).to.be.eql("\ntest\npassed");
     });
-    it("can't be used outside a guild", async () => {
-      const message: unknown = { reply: replySpy };
-      const services = {
-        store: new Store(),
-      };
-      await jobs.execute({ message, services } as ExtractedCommand);
-      expect(replySpy.firstCall.args[0]).to.be.eql("must be used in a guild");
-    });
     it("when no jobs, reply reporting so", async () => {
       const message: unknown = { reply: replySpy, guild: { id: "1" } };
       const storeGetFake = fake.returns([]);

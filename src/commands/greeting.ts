@@ -27,9 +27,6 @@ export const greeting: Command = {
   permission: 1,
   async execute({ message, services, args }) {
     const { modifier, message: greetMsg } = args;
-    if (!message.guild) {
-      throw new Error("Command must be used in a guild");
-    }
     let msg: string;
     switch (modifier) {
       case GreetingModifier.SET:

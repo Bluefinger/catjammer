@@ -10,10 +10,6 @@ export const commandsList: Command = {
   definition: "commands",
   help: "has no arguments, just use !commands",
   async execute({ message, commands, services }): Promise<void> {
-    if (!message.guild || !message.member) {
-      await message.reply("Must be used in a guild channel");
-      return;
-    }
     const setPermission =
       services.permissions.getPermission(
         `${message.guild.id}::${message.author.id}`,

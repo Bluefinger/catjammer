@@ -8,12 +8,7 @@ export const jobs: Command = {
   definition: "jobs",
   help: "use !jobs",
   async execute({ message, services }): Promise<void> {
-    const { guild } = message;
-    if (!guild) {
-      await message.reply("must be used in a guild");
-      return;
-    }
-    const jobs = await services.store.get<StorableJob[]>(`jobs::${guild.id}`);
+    const jobs = await services.store.get<StorableJob[]>(`jobs::${message.guild.id}`);
     if (!jobs) throw new Error("StorableJob array missing from store service");
     if (jobs.length > 0) {
       const str = jobs.reduce((acc, job) => acc + "\n" + job.name, "");
