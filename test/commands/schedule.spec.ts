@@ -3,13 +3,29 @@ import { validateDay, validateTime } from "../../src/commands/helpers/scheduleVa
 import type { ExtractedCommand } from "../../src/matcher";
 import type { Services } from "../../src/index.types";
 import { fake, spy } from "sinon";
-import { Message, Collection, Snowflake, SnowflakeUtil, GuildChannel, Client } from "discord.js";
+import {
+  Message,
+  Collection,
+  Snowflake,
+  SnowflakeUtil,
+  GuildChannel,
+  Client,
+  Guild,
+} from "discord.js";
 import { Store } from "../../src/services/store";
 import { schedule } from "../../src/commands/schedule";
 import { Scheduler, StorableJob } from "../../src/services";
 
 describe("schedule command", () => {
   describe("init", () => {
+    const cache = new Collection<Snowflake, Guild>();
+    cache.set(SnowflakeUtil.generate(), { id: "id" } as Guild);
+    cache.set(SnowflakeUtil.generate(), { id: "1111" } as Guild);
+    const client: unknown = {
+      guilds: {
+        cache: cache,
+      },
+    };
     it("set jobs array if none already exists", async () => {
       const services = {
         store: new Store(),
@@ -17,7 +33,7 @@ describe("schedule command", () => {
       };
       const setSpy = spy();
       services.store.set = setSpy;
-      await schedule.init({} as Client, services as Services);
+      await schedule.init(client as Client, services as Services);
       expect(setSpy.called).to.be.true;
     });
 
@@ -28,9 +44,22 @@ describe("schedule command", () => {
       };
       const scheduleFromStoreSpy = spy();
       services.scheduler.scheduleFromStore = scheduleFromStoreSpy;
-      await services.store.set("jobs", [{} as StorableJob, {} as StorableJob]);
-      await schedule.init({} as Client, services as Services);
+      await services.store.set("jobs::id", [{} as StorableJob, {} as StorableJob]);
+      await schedule.init(client as Client, services as Services);
       expect(scheduleFromStoreSpy.callCount).to.be.eql(2);
+    });
+
+    it("call scheduleFromStore for each job in array", async () => {
+      const services = {
+        store: new Store(),
+        scheduler: new Scheduler(),
+      };
+      const scheduleFromStoreSpy = spy();
+      services.scheduler.scheduleFromStore = scheduleFromStoreSpy;
+      await services.store.set("jobs::id", [{} as StorableJob, {} as StorableJob]);
+      await services.store.set("jobs::1111", [{} as StorableJob]);
+      await schedule.init(client as Client, services as Services);
+      expect(scheduleFromStoreSpy.callCount).to.be.eql(3);
     });
   });
   describe("validation", () => {
@@ -77,6 +106,7 @@ describe("schedule command", () => {
       channel: {
         type: "text",
         guild: {
+          id: "1111",
           channels: {
             cache: channelCollection,
           },
@@ -113,7 +143,7 @@ describe("schedule command", () => {
     });
 
     it("should call scheduleJob with correct arguments", async () => {
-      await services.store.set("jobs", []);
+      await services.store.set("jobs::1111", []);
       const args: Record<string, string> = {
         name: "test",
         day: "Thursday",
@@ -154,7 +184,7 @@ describe("schedule command", () => {
     });
 
     it("should reply when successful", async () => {
-      await services.store.set("jobs", []);
+      await services.store.set("jobs::1111", []);
       const args: Record<string, string> = {
         name: "test",
         day: "Thursday",
@@ -167,7 +197,7 @@ describe("schedule command", () => {
     });
 
     it("job array to be stored should contain new job generated", async () => {
-      await services.store.set("jobs", []);
+      await services.store.set("jobs::1111", []);
       const setSpy = spy();
       services.store.set = setSpy;
       const args: Record<string, string> = {

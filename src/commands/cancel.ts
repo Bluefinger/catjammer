@@ -23,7 +23,7 @@ export const cancel: Command = {
 
     services.scheduler.cancel(name, message.guild.id);
 
-    const jobs = await services.store.get<StorableJob[]>("jobs");
+    const jobs = await services.store.get<StorableJob[]>(`jobs::${guildName}`);
     if (!jobs) {
       throw new Error("Failed to get jobs from store");
     }
@@ -32,7 +32,7 @@ export const cancel: Command = {
     if (filteredJobs.length === jobs.length) {
       throw new Error("Job was found in memory but does not exist in the store");
     } else {
-      await services.store.set("jobs", filteredJobs);
+      await services.store.set(`jobs::${guildName}`, filteredJobs);
       await message.reply("Job removed");
     }
   },
