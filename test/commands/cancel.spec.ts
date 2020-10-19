@@ -24,15 +24,6 @@ describe("cancel command", () => {
       cancelSpy.resetHistory();
     });
 
-    // it("rejects message with no guild", async () => {
-    //   const message: unknown = {
-    //     reply: replySpy,
-    //     guild: null,
-    //   };
-    //   await cancel.execute({ message: message as Message, args } as ExtractedCommand);
-    //   expect(replySpy.calledWith("Must be used in a guild channel")).to.be.true;
-    // });
-
     it("rejects argument of command that doesnt exist", async () => {
       const message: unknown = {
         reply: replySpy,
