@@ -2,7 +2,8 @@ import type { Services } from "../index.types";
 import type { CommandWithInit } from "./type";
 import { PermissionLevels, PermissionType, SetPermission } from "../constants";
 import { extractId } from "./helpers/mentions";
-import { MessageMentions } from "discord.js";
+
+const isRole = /<@&\d+>/g;
 
 const enum Modifiers {
   GIVE = "give",
@@ -84,9 +85,7 @@ export const permission: CommandWithInit = {
       await message.reply("You cannot change the permissions of a Guild owner");
       return;
     }
-    const type = MessageMentions.ROLES_PATTERN.test(role)
-      ? PermissionType.ROLE
-      : PermissionType.USER;
+    const type = isRole.test(role) ? PermissionType.ROLE : PermissionType.USER;
     let msg: string;
     switch (modifier) {
       case Modifiers.GIVE:
