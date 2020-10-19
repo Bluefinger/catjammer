@@ -5,13 +5,16 @@ import { extractId } from "./helpers/mentions";
 
 export const schedule: CommandWithInit = {
   init: async (client, services) => {
-    const jobs = await services.store.get<StorableJob[]>("jobs");
-    if (!jobs) {
-      await services.store.set("jobs", []);
-    } else {
-      jobs.forEach((job) => {
-        services.scheduler.scheduleFromStore(job, client);
-      });
+    const guilds = client.guilds.cache.array();
+    for (const { id } of guilds) {
+      const jobs = await services.store.get<StorableJob[]>(`jobs::${id}`);
+      if (!jobs) {
+        await services.store.set(`jobs::${id}`, []);
+      } else {
+        jobs.forEach((job) => {
+          services.scheduler.scheduleFromStore(job, client);
+        });
+      }
     }
   },
   name: "schedule",
@@ -63,7 +66,7 @@ export const schedule: CommandWithInit = {
 
     services.scheduler.schedule(name, params, message, targetChannel);
 
-    const jobs = await services.store.get<StorableJob[]>("jobs");
+    const jobs = await services.store.get<StorableJob[]>(`jobs::${guild.id}`);
     if (!jobs) {
       throw new Error("Failed to load jobs from store");
     }
@@ -73,7 +76,7 @@ export const schedule: CommandWithInit = {
       message: { guild: targetChannel.guild.id, channel: targetChannel.id, content: message },
     };
     jobs.push(storableJob);
-    await services.store.set("jobs", jobs);
+    await services.store.set(`jobs::${guild.id}`, jobs);
     await command.reply("Schedule successful");
   },
 };

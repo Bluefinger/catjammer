@@ -13,10 +13,9 @@ export const jobs: Command = {
       await message.reply("must be used in a guild");
       return;
     }
-    const jobs = await services.store.get<StorableJob[]>("jobs");
+    const jobs = await services.store.get<StorableJob[]>(`jobs::${guild.id}`);
     if (!jobs) throw new Error("StorableJob array missing from store service");
-    const filteredJobs = jobs.filter((job) => job.message.guild === guild.id);
-    const str = filteredJobs.reduce((acc, job) => acc + "\n" + job.name, "");
+    const str = jobs.reduce((acc, job) => acc + "\n" + job.name, "");
     if (str.length === 0) {
       await message.reply("no current jobs");
     } else {

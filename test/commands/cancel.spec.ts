@@ -43,7 +43,7 @@ describe("cancel command", () => {
     });
     it("successfully call cancel with correct arguments", async () => {
       const storableJob: unknown = { name: "test", message: { guild: "guild" } };
-      await services.store.set("jobs", [storableJob]);
+      await services.store.set("jobs::guild", [storableJob]);
       const message: unknown = {
         reply: replySpy,
         guild: { id: "guild" },
