@@ -1,4 +1,4 @@
-import { PermissionType } from "../constants";
+import { getCommandsByPermission } from "./helpers/permissions";
 import type { Command } from "./type";
 
 const formatCommandList = (msg: string, { name, description }: Command) =>
@@ -9,19 +9,12 @@ export const commandsList: Command = {
   description: "Lists the available commands to the user",
   definition: "commands",
   help: "has no arguments, just use !commands",
-  async execute({ message, commands, services }): Promise<void> {
-    const setPermission =
-      services.permissions.getPermission(
-        `${message.guild.id}::${message.author.id}`,
-        PermissionType.USER
-      ) ||
-      services.permissions.getPermission(
-        `${message.guild.id}::${message.member.roles.highest.id}`,
-        PermissionType.ROLE
-      );
-    const response = commands
-      .filter(({ permission = 0 }) => setPermission >= permission)
-      .reduce(formatCommandList, "Commands that are available to you are as follows:\n\n");
-    await message.reply(response);
+  async execute(payload): Promise<void> {
+    const { message } = payload;
+    const list = getCommandsByPermission(payload).reduce(
+      formatCommandList,
+      "Commands that are available to you are as follows:\n\n"
+    );
+    await message.reply(list);
   },
 };

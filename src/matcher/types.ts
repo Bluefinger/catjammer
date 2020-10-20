@@ -1,6 +1,6 @@
 import type { Command } from "../commands/type";
 import type { RoutedCommand } from "../router";
-import type { GuildMessage, Services } from "../index.types";
+import type { GuildMessage, ReadonlyList, Services } from "../index.types";
 
 /**
  * Argument Matcher. Takes a message input and yields either
@@ -12,8 +12,6 @@ interface BaseCommand {
   readonly message: GuildMessage;
   readonly services: Services;
 }
-
-type ReadonlyList<T> = Readonly<Readonly<T>[]>;
 
 export interface ExtractedCommand extends BaseCommand {
   readonly matched: true;
