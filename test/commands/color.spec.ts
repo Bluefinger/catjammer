@@ -1,8 +1,9 @@
 import { color, isValidHex, removePreviousColor } from "../../src/commands/color";
-import { expect } from "chai";
+import { assert, expect } from "chai";
 import { spy, fake } from "sinon";
 import { Message, Collection, SnowflakeUtil, GuildMember, Snowflake, Role } from "discord.js";
 import { ExtractedCommand } from "../../src/matcher";
+import { GuildMessage } from "../../src/index.types";
 
 describe("color commands", () => {
   describe("validation", () => {
@@ -108,16 +109,23 @@ describe("color commands", () => {
 
     const cache = new Collection<Snowflake, Role>();
     cache.set(SnowflakeUtil.generate(), { name: "ehawjkhejkhe" } as Role);
+    cache.set(SnowflakeUtil.generate(), { name: "#ffffff" } as Role);
     const fetchFake = fake.returns({ cache: cache });
 
-    const findFake = fake.returns({
+    const membersCache = new Collection<Snowflake, GuildMember>();
+    membersCache.set(SnowflakeUtil.generate(), { user: { id: "fake" } } as GuildMember);
+    const memberSpy: unknown = {
+      user: {
+        id: "author",
+      },
       roles: {
         add: addSpy,
         cache: {
           find: fake(),
         },
       },
-    });
+    };
+    membersCache.set(SnowflakeUtil.generate(), memberSpy as GuildMember);
 
     const guild: unknown = {
       roles: {
@@ -125,9 +133,73 @@ describe("color commands", () => {
         create: createSpy,
       },
       members: {
-        cache: {
-          find: findFake,
+        cache: membersCache,
+      },
+    };
+
+    it("should throw an error if role.fetch fails", async () => {
+      const args: Record<string, string> = {
+        colorHex: "#000000",
+      };
+      const altGuild: unknown = {
+        roles: {
+          fetch: fake.returns(undefined),
+          create: createSpy,
         },
+      };
+      const message: unknown = {
+        guild: altGuild,
+        reply: replySpy,
+        author: {
+          id: "author",
+        },
+      };
+
+      try {
+        await color.execute({ message: message as GuildMessage, args: args } as ExtractedCommand);
+        assert.fail("No error thrown");
+      } catch (err) {
+        const error = err as Error;
+        expect(error.message).to.be.eql("Role fetch failed");
+      }
+    });
+
+    it("throws an error if no GuildMember is found in the guild", async () => {
+      const args: Record<string, string> = {
+        colorHex: "#000000",
+      };
+      const memberlessGuild: unknown = {
+        roles: {
+          fetch: fetchFake,
+          create: createSpy,
+        },
+        members: {
+          cache: {
+            find: fake.returns(undefined),
+          },
+        },
+      };
+      const message: unknown = {
+        guild: memberlessGuild,
+        reply: replySpy,
+        author: {
+          id: "author",
+        },
+      };
+      try {
+        await color.execute({ message: message as GuildMessage, args: args } as ExtractedCommand);
+        assert.fail("No error thrown");
+      } catch (err) {
+        const error = err as Error;
+        expect(error.message).to.be.eql("GuildMember find failed");
+      }
+    });
+
+    const message: unknown = {
+      guild: guild,
+      reply: replySpy,
+      author: {
+        id: "author",
       },
     };
 
@@ -135,11 +207,8 @@ describe("color commands", () => {
       const args: Record<string, string> = {
         colorHex: "#000000",
       };
-      const message: unknown = {
-        guild: guild,
-        reply: replySpy,
-      };
-      await color.execute({ message: message as Message, args: args } as ExtractedCommand);
+
+      await color.execute({ message: message as GuildMessage, args: args } as ExtractedCommand);
       expect(replySpy.firstCall.args[0]).to.be.eql("New color set");
     });
 
@@ -147,13 +216,15 @@ describe("color commands", () => {
       const args: Record<string, string> = {
         colorHex: "#0f0f0f",
       };
-
-      const message: unknown = {
-        guild: guild,
-        reply: replySpy,
-      };
-      await color.execute({ message: message as Message, args: args } as ExtractedCommand);
+      await color.execute({ message: message as GuildMessage, args: args } as ExtractedCommand);
       expect(addSpy.called).to.be.true;
+    });
+    it("call add role without creating new role", async () => {
+      const args: Record<string, string> = {
+        colorHex: "#ffffff",
+      };
+      await color.execute({ message: message as GuildMessage, args: args } as ExtractedCommand);
+      expect(addSpy.called && !createSpy.called).to.be.true;
     });
   });
 });
