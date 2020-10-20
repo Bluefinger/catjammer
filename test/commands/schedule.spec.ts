@@ -1,8 +1,9 @@
-import { expect } from "chai";
+import { assert, expect } from "chai";
 import { validateDay, validateTime } from "../../src/commands/helpers/scheduleValidators";
 import type { ExtractedCommand } from "../../src/matcher";
-import type { Services } from "../../src/index.types";
-import { fake, spy } from "sinon";
+import type { Services, GuildMessage } from "../../src/index.types";
+import { Job } from "node-schedule";
+import { spy } from "sinon";
 import {
   Message,
   Collection,
@@ -119,7 +120,6 @@ describe("schedule command", () => {
       scheduler: new Scheduler(),
       store: new Store(),
     };
-    services.scheduler.has = fake.returns(false);
     services.scheduler.schedule = scheduleJobSpy;
 
     const resetSpies = () => {
@@ -138,8 +138,69 @@ describe("schedule command", () => {
         message: "blah blah",
       };
 
-      await schedule.execute({ message: message as Message, args, services } as ExtractedCommand);
+      await schedule.execute({
+        message: message as GuildMessage,
+        args,
+        services,
+      } as ExtractedCommand);
       expect(replySpy.calledWith("Invalid day argument. Day must be spelt in full")).to.be.true;
+    });
+
+    it("reject invalid time argument", async () => {
+      const args: Record<string, string> = {
+        name: "test",
+        day: "Monday",
+        time: "wrong",
+        channel: "<#1234>",
+        message: "blah blah",
+      };
+      await schedule.execute({
+        message: message as GuildMessage,
+        args,
+        services,
+      } as ExtractedCommand);
+      expect(replySpy.calledWith("Invalid time argument. Must use 24 hour time seperated by :")).to
+        .be.true;
+    });
+
+    it("reject when used in channel outside a guild", async () => {
+      const args: Record<string, string> = {
+        name: "test",
+        day: "Monday",
+        time: "00:02",
+        channel: "<#1234>",
+        message: "blah blah",
+      };
+      const dmMessage: unknown = {
+        reply: replySpy,
+        channel: {
+          type: "DM",
+        },
+      };
+      await schedule.execute({
+        message: dmMessage as GuildMessage,
+        args,
+        services,
+      } as ExtractedCommand);
+      expect(replySpy.calledWith("Can only be used in a guild channel")).to.be.true;
+    });
+
+    it("rejects if name is taken", async () => {
+      const args: Record<string, string> = {
+        name: "taken",
+        day: "Monday",
+        time: "00:11",
+        channel: "<#1234>",
+        message: "blah blah",
+      };
+      services.scheduler.jobStore.set("1111taken", {} as Job);
+      console.log(services.scheduler.jobStore.has("1111taken"));
+      await schedule.execute({
+        message: message as GuildMessage,
+        args,
+        services,
+      } as ExtractedCommand);
+      expect(replySpy.calledWith("name already in use")).to.be.true;
     });
 
     it("should call scheduleJob with correct arguments", async () => {
@@ -181,6 +242,24 @@ describe("schedule command", () => {
       };
       await schedule.execute({ message: message as Message, args, services } as ExtractedCommand);
       expect(replySpy.firstCall.args[0]).to.be.eql("Not a text channel");
+    });
+
+    it("throw error when no StorableJob array in store", async () => {
+      await services.store.delete("jobs::1111");
+      const args: Record<string, string> = {
+        name: "test",
+        day: "Thursday",
+        time: "01:20",
+        channel: "<#1234>",
+        message: "blah blah",
+      };
+      try {
+        await schedule.execute({ message: message as Message, args, services } as ExtractedCommand);
+        assert.fail("Error not thrown");
+      } catch (err) {
+        const error = err as Error;
+        expect(error.message).to.be.eql("Failed to load jobs from store");
+      }
     });
 
     it("should reply when successful", async () => {
