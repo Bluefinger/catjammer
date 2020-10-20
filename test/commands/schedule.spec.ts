@@ -194,7 +194,6 @@ describe("schedule command", () => {
         message: "blah blah",
       };
       services.scheduler.jobStore.set("1111taken", {} as Job);
-      console.log(services.scheduler.jobStore.has("1111taken"));
       await schedule.execute({
         message: message as GuildMessage,
         args,
