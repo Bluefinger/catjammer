@@ -1,6 +1,8 @@
 import type { Guild, GuildMember, Message, Presence, User } from "discord.js";
 import type { Logger, Store, Scheduler, Permissions } from "./services";
 
+export type ReadonlyList<T> = ReadonlyArray<Readonly<T>>;
+
 export interface Config {
   readonly token: string;
   readonly prefix: string;
