@@ -39,7 +39,7 @@ export const gif: Command = {
   name: "gif",
   permission: 1,
   description: "Add or remove gifs or images to be used with g command",
-  definition: "gif :action *",
+  definition: "gif :action*",
   help: "",
   async execute({ message: command, args, services }): Promise<void> {
     const { action, message } = args;
