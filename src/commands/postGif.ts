@@ -1,7 +1,7 @@
 import type { Command } from "./type";
 import type { StoredGifs } from "./gif";
 
-export const g: Command = {
+export const postGif: Command = {
   name: "g",
   description: "command to use gifs",
   definition: "g :name",

@@ -9,7 +9,7 @@ import { permission } from "./permission";
 import { jobs } from "./jobs";
 import { greeting } from "./greeting";
 import { gif } from "./gif";
-import { g } from "./g";
+import { postGif } from "./postGif";
 
 export const commands: Command[] = [
   schedule,
@@ -22,5 +22,5 @@ export const commands: Command[] = [
   jobs,
   greeting,
   gif,
-  g,
+  postGif,
 ];
