@@ -8,6 +8,8 @@ import { cancel } from "./cancel";
 import { permission } from "./permission";
 import { jobs } from "./jobs";
 import { greeting } from "./greeting";
+import { gif } from "./gif";
+import { postGif } from "./postGif";
 
 export const commands: Command[] = [
   schedule,
@@ -19,4 +21,6 @@ export const commands: Command[] = [
   permission,
   jobs,
   greeting,
+  gif,
+  postGif,
 ];
