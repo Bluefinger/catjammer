@@ -1,7 +1,8 @@
 import type { CommandWithInit } from "./type";
 import type { StorableJob } from "../services/schedule";
-import { validateDay, validateTime, days, isTextChannel } from "./helpers/scheduleValidators";
+import { validateDay, validateTime, days } from "./helpers/scheduleValidators";
 import { extractId } from "./helpers/mentions";
+import { isTextChannel } from "./helpers/channels";
 
 export const schedule: CommandWithInit = {
   init: async (client, services) => {

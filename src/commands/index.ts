@@ -10,6 +10,7 @@ import { jobs } from "./jobs";
 import { greeting } from "./greeting";
 import { gif } from "./gif";
 import { postGif } from "./postGif";
+import { reactor } from "./reactor";
 
 export const commands: Command[] = [
   schedule,
@@ -23,4 +24,5 @@ export const commands: Command[] = [
   greeting,
   gif,
   postGif,
+  reactor,
 ];

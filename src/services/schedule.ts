@@ -1,6 +1,6 @@
 import { Client, TextChannel } from "discord.js";
 import { Job, scheduleJob } from "node-schedule";
-import { isTextChannel } from "../commands/helpers/scheduleValidators";
+import { isTextChannel } from "../commands/helpers/channels";
 
 export interface JobParams {
   minute: string;
