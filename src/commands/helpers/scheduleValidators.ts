@@ -1,5 +1,3 @@
-import { TextChannel, GuildChannel, DMChannel, NewsChannel } from "discord.js";
-
 export const days: Record<string, number> = {
   Sunday: 0,
   Monday: 1,
@@ -18,7 +16,3 @@ export const validateTime = (time: string): boolean => {
 export const validateDay = (day: string): boolean => {
   return day in days;
 };
-
-export const isTextChannel = (
-  channel: GuildChannel | TextChannel | DMChannel | NewsChannel
-): channel is TextChannel => channel.type === "text";

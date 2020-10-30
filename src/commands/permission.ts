@@ -5,7 +5,7 @@ import { extractId } from "./helpers/mentions";
 
 const isRole = /<@&\d+>/g;
 
-const enum Modifiers {
+const enum PermissionActions {
   GIVE = "give",
   REMOVE = "remove",
   BAN = "ban",
@@ -13,11 +13,10 @@ const enum Modifiers {
 
 type StoredPermissions = [string, SetPermission, PermissionType][];
 
-const grantPermission = async (
+const grantPermission = (level: SetPermission) => async (
   { store, permissions }: Services,
   guildId: string,
   id: string,
-  level: SetPermission,
   type: PermissionType
 ) => {
   const key = `${guildId}::${id}`;
@@ -51,6 +50,15 @@ const removePermission = async (
   return "No permissions to remove";
 };
 
+const actions: Record<
+  PermissionActions,
+  (services: Services, guildId: string, id: string, type: PermissionType) => Promise<string>
+> = {
+  give: grantPermission(PermissionLevels.OFFICER),
+  ban: grantPermission(PermissionLevels.BANNED),
+  remove: removePermission,
+};
+
 export const permission: CommandWithInit = {
   name: "permission",
   description: "Grants permissions to roles so that they can use certain commands",
@@ -82,20 +90,10 @@ export const permission: CommandWithInit = {
       return;
     }
     const type = isRole.test(role) ? PermissionType.ROLE : PermissionType.USER;
-    let msg: string;
-    switch (modifier) {
-      case Modifiers.GIVE:
-        msg = await grantPermission(services, message.guild.id, id, PermissionLevels.OFFICER, type);
-        break;
-      case Modifiers.BAN:
-        msg = await grantPermission(services, message.guild.id, id, PermissionLevels.BANNED, type);
-        break;
-      case Modifiers.REMOVE:
-        msg = await removePermission(services, message.guild.id, id, type);
-        break;
-      default:
-        msg = "Invalid permission modifier. You can either `give`, `remove`, or `ban`.";
-    }
+    const action = actions[modifier as PermissionActions];
+    const msg = action
+      ? await action(services, message.guild.id, id, type)
+      : "Invalid permission modifier. You can either `give`, `remove`, or `ban`.";
     await message.channel.send(msg);
   },
 };
