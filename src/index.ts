@@ -15,7 +15,7 @@ import { Store, Logger, Scheduler, Permissions, RoleReactor } from "./services";
 
 const config = JSON.parse(readFileSync("./config.json", "utf-8")) as Config;
 
-const client = new Client({ partials: ["MESSAGE", "CHANNEL", "REACTION"] });
+const client = new Client({ partials: ["MESSAGE", "REACTION", "USER", "GUILD_MEMBER"] });
 const services: Services = {
   store: new Store({
     uri: "sqlite://catjammer.sqlite",

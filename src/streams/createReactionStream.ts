@@ -1,7 +1,6 @@
 import type { Client, MessageReaction, PartialUser, User } from "discord.js";
 import { fromEventPattern, Observable } from "rxjs";
 import type { NodeEventHandler } from "rxjs/internal/observable/fromEvent";
-import { filter } from "rxjs/operators";
 import type { RoleReaction, Services } from "../index.types";
 
 const reactionHandler = (
@@ -14,10 +13,19 @@ const reactionHandler = (
       await reaction.fetch();
     } catch (e) {
       services.log.error(e);
+      return;
     }
   }
-  if (!user.bot && user.presence && user.presence.member) {
-    handler({ type, reaction, member: user.presence.member });
+  if (!user.bot && services.roleReactor.has(reaction.message.id)) {
+    const guild = reaction.message.guild;
+    if (guild) {
+      try {
+        const member = await guild.members.fetch(user.id);
+        handler({ type, reaction, member });
+      } catch (e) {
+        services.log.error(e);
+      }
+    }
   }
 };
 
@@ -42,5 +50,5 @@ export const createReactionStream = (
       client.off("messageReactionAdd", reactionAddHandler);
       client.off("messageReactionRemove", reactionRemoveHandler);
     }
-  ).pipe(filter(({ reaction }) => services.roleReactor.has(reaction.message.id)));
+  );
 };

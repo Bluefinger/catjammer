@@ -20,7 +20,7 @@ const actions: Record<ReactorActions, (payload: ExtractedCommand) => Promise<voi
       const channelId = extractId(args.channel);
       try {
         const room = getTextChannel(message, channelId);
-        const reply = await room.send(services.roleReactor.list(args.message).trim());
+        const reply = await room.send(services.roleReactor.list(args.message).trimLeft());
         await services.store.set<ReactorRecord>(key, [channelId, reply.id]);
         await services.roleReactor.setup(reply as GuildMessage);
         services.roleReactor.add(reply.id);
@@ -44,8 +44,10 @@ const actions: Record<ReactorActions, (payload: ExtractedCommand) => Promise<voi
         const messages = await room.messages.fetch();
         const msg = messages.get(replyId);
         if (msg) {
-          await msg.edit(services.roleReactor.list(args.message).trim());
+          await msg.edit(services.roleReactor.list(args.message).trimLeft());
           await message.channel.send("Reactor message updated");
+        } else {
+          throw new Error("Reactor/Store desync. An id is stored, but no message exists");
         }
       } catch (e) {
         services.log.error(e);
@@ -70,6 +72,8 @@ const actions: Record<ReactorActions, (payload: ExtractedCommand) => Promise<voi
           await services.store.delete(key);
           services.roleReactor.remove(replyId);
           await message.channel.send("Reactor message deleted");
+        } else {
+          throw new Error("Reactor/Store desync. An id is stored, but no message exists");
         }
       } catch (e) {
         services.log.error(e);
@@ -82,7 +86,7 @@ const actions: Record<ReactorActions, (payload: ExtractedCommand) => Promise<voi
 };
 
 const invalidAction = async ({ message }: ExtractedCommand) => {
-  await message.reply("Invalid modifier");
+  await message.reply("Invalid action");
 };
 
 export const reactor: CommandWithInit = {
@@ -90,7 +94,8 @@ export const reactor: CommandWithInit = {
   description:
     "Creates a message that assigns roles automatically to users by listening to reactions on that message",
   definition: "reactor :action #channel*",
-  help: "whatevs",
+  help:
+    "use !reactor set/update/clear #channel <post message here> to set the reactor message in the desired text channel",
   permission: 0,
   async init(client, services) {
     const loading = client.guilds.cache.map(async ({ id }) => {

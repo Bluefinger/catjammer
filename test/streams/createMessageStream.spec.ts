@@ -29,115 +29,113 @@ const commands: Command[] = [
   },
 ];
 
-describe("createMessageStream.ts", () => {
-  describe("createMessageStream", () => {
-    it("creates a subscribable Stream", () => {
-      const fakeClient = new EventEmitter() as Client;
-      const stream = createMessageStream(config, fakeClient, commands, services);
-      // eslint-disable-next-line
-      expect(stream.subscribe).to.be.a("function");
+describe("createMessageStream", () => {
+  it("creates a subscribable Stream", () => {
+    const fakeClient = new EventEmitter() as Client;
+    const stream = createMessageStream(config, fakeClient, commands, services);
+    // eslint-disable-next-line
+    expect(stream.subscribe).to.be.a("function");
 
-      // Doesn't initialise listener until subscribed
-      expect((fakeClient as EventEmitter).listenerCount("message")).to.equal(0);
-      stream.subscribe({
-        next: () => {
-          expect.fail("Should not execute if no value has been received");
-        },
-      });
-      expect((fakeClient as EventEmitter).listenerCount("message")).to.equal(1);
+    // Doesn't initialise listener until subscribed
+    expect((fakeClient as EventEmitter).listenerCount("message")).to.equal(0);
+    stream.subscribe({
+      next: () => {
+        expect.fail("Should not execute if no value has been received");
+      },
     });
-    it("emits valid message events", () => {
-      const assertions = 1;
-      let assertionCount = 0;
-      const fakeClient = new EventEmitter() as Client;
-      const stream = createMessageStream(config, fakeClient, commands, services);
-      const fakeMessage = {
-        author: {
-          bot: false,
-          id: "id0",
-        },
-        guild: {
-          id: "guild",
-        },
-        member: {
-          roles: {
-            highest: {
-              id: "id3",
-            },
+    expect((fakeClient as EventEmitter).listenerCount("message")).to.equal(1);
+  });
+  it("emits valid message events", () => {
+    const assertions = 1;
+    let assertionCount = 0;
+    const fakeClient = new EventEmitter() as Client;
+    const stream = createMessageStream(config, fakeClient, commands, services);
+    const fakeMessage = {
+      author: {
+        bot: false,
+        id: "id0",
+      },
+      guild: {
+        id: "guild",
+      },
+      member: {
+        roles: {
+          highest: {
+            id: "id3",
           },
         },
-        content: "!ping me",
-      } as unknown;
-      stream.subscribe({
-        next: (message) => {
-          expect(message).to.deep.equal({
-            matched: true,
-            message: fakeMessage,
-            services,
-            commands,
-            command: commands[0],
-            args: { thing: "me" },
-          });
-          assertionCount += 1;
-        },
-      });
-      fakeClient.emit("message", fakeMessage as Message);
-      expect(assertionCount).to.equal(assertions);
+      },
+      content: "!ping me",
+    } as unknown;
+    stream.subscribe({
+      next: (message) => {
+        expect(message).to.deep.equal({
+          matched: true,
+          message: fakeMessage,
+          services,
+          commands,
+          command: commands[0],
+          args: { thing: "me" },
+        });
+        assertionCount += 1;
+      },
     });
-    it("filters messages from a bot", () => {
-      const fakeClient = new EventEmitter() as Client;
-      const stream = createMessageStream(config, fakeClient, commands, services);
-      const fakeMessage = {
-        author: {
-          bot: true,
-        },
-        content: "!bot says hi",
-      } as unknown;
-      stream.subscribe({
-        next: () => {
-          expect.fail("should not receive emitted message");
-        },
-      });
-      fakeClient.emit("message", fakeMessage as Message);
+    fakeClient.emit("message", fakeMessage as Message);
+    expect(assertionCount).to.equal(assertions);
+  });
+  it("filters messages from a bot", () => {
+    const fakeClient = new EventEmitter() as Client;
+    const stream = createMessageStream(config, fakeClient, commands, services);
+    const fakeMessage = {
+      author: {
+        bot: true,
+      },
+      content: "!bot says hi",
+    } as unknown;
+    stream.subscribe({
+      next: () => {
+        expect.fail("should not receive emitted message");
+      },
     });
-    it("filters messages that don't begin with the prefix", () => {
-      const fakeClient = new EventEmitter() as Client;
-      const stream = createMessageStream(config, fakeClient, commands, services);
-      const fakeMessage = {
-        author: {
-          bot: false,
-          id: "id0",
-        },
-        guild: {
-          id: "guild",
-        },
-        member: {
-          roles: {
-            highest: {
-              id: "id3",
-            },
+    fakeClient.emit("message", fakeMessage as Message);
+  });
+  it("filters messages that don't begin with the prefix", () => {
+    const fakeClient = new EventEmitter() as Client;
+    const stream = createMessageStream(config, fakeClient, commands, services);
+    const fakeMessage = {
+      author: {
+        bot: false,
+        id: "id0",
+      },
+      guild: {
+        id: "guild",
+      },
+      member: {
+        roles: {
+          highest: {
+            id: "id3",
           },
         },
-        content: "someone says hi",
-      } as unknown;
-      stream.subscribe({
-        next: () => {
-          expect.fail("should not receive emitted message");
-        },
-      });
-      fakeClient.emit("message", fakeMessage as Message);
+      },
+      content: "someone says hi",
+    } as unknown;
+    stream.subscribe({
+      next: () => {
+        expect.fail("should not receive emitted message");
+      },
     });
-    it("cleans up event handlers when subscription is ended", () => {
-      const fakeClient = new EventEmitter() as Client;
-      const stream = createMessageStream(config, fakeClient, commands, services);
-      const subscription = stream.subscribe({
-        next: () => {
-          expect.fail("should not receive emitted message");
-        },
-      });
-      expect((fakeClient as EventEmitter).listenerCount("message")).to.equal(1);
-      subscription.unsubscribe();
-      expect((fakeClient as EventEmitter).listenerCount("message")).to.equal(0);
+    fakeClient.emit("message", fakeMessage as Message);
+  });
+  it("cleans up event handlers when subscription is ended", () => {
+    const fakeClient = new EventEmitter() as Client;
+    const stream = createMessageStream(config, fakeClient, commands, services);
+    const subscription = stream.subscribe({
+      next: () => {
+        expect.fail("should not receive emitted message");
+      },
     });
+    expect((fakeClient as EventEmitter).listenerCount("message")).to.equal(1);
+    subscription.unsubscribe();
+    expect((fakeClient as EventEmitter).listenerCount("message")).to.equal(0);
   });
 });
