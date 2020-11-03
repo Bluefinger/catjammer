@@ -20,6 +20,7 @@ const getTimestamp = (type: string): string => {
 interface LoggerOpts {
   stdout: NodeJS.WritableStream;
   stderr: NodeJS.WritableStream;
+  ignoreErrors: boolean;
 }
 
 export class Logger {

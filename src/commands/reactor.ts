@@ -96,7 +96,7 @@ export const reactor: CommandWithInit = {
   definition: "reactor :action #channel*",
   help:
     "use !reactor set/update/clear #channel <post message here> to set the reactor message in the desired text channel",
-  permission: 0,
+  permission: 1,
   async init(client, services) {
     const loading = client.guilds.cache.map(async ({ id }) => {
       const msg = await services.store.get<ReactorRecord>(`reactor::${id}`);

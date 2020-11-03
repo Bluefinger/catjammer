@@ -19,7 +19,7 @@ describe("logger.ts", () => {
 
       stdout.on("data", handler);
 
-      const logger = new Logger({ stdout, stderr });
+      const logger = new Logger({ stdout, stderr, ignoreErrors: false });
 
       logger.info("An info message");
 
@@ -35,7 +35,7 @@ describe("logger.ts", () => {
 
       stderr.on("data", handler);
 
-      const logger = new Logger({ stdout, stderr });
+      const logger = new Logger({ stdout, stderr, ignoreErrors: false });
 
       logger.error("An error message");
 
