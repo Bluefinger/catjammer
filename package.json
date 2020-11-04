@@ -4,9 +4,9 @@
   "description": "catJAM Discord Bot",
   "main": "index.js",
   "scripts": {
-    "build": "tsc --build ./tsconfig.production.json",
+    "build": "tsc --build ./config/tsconfig.production.json",
     "start": "ts-node --files ./src/index.ts",
-    "start:prod": "ts-node -T --files ./src/index.ts",
+    "start:quick": "ts-node -T --files ./src/index.ts",
     "test": "mocha",
     "coverage": "nyc --use-spawn-wrap mocha",
     "lint:full": "eslint \"./{src,test}/**/*.ts\"",
