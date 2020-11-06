@@ -1,7 +1,11 @@
 {
   "compilerOptions": {
     "composite": true,
-    "tsBuildInfoFile": "./.cache/tsBuildInfo",
+    "outDir": "./dist",
+    "declaration": true,
+    "declarationMap": true,
+    "declarationDir": "./dist",
+    "tsBuildInfoFile": "./dist/tsBuildInfo",
     "sourceMap": true,
     "strict": true,
     "noUnusedLocals": true,
@@ -10,7 +14,8 @@
     "moduleResolution": "node",
     "target": "es2019",
     "rootDir": "./",
-    "stripInternal": true
+    "stripInternal": true,
+    "downlevelIteration": false
   },
   "include": ["./src/**/*", "./test/**/*"]
 }

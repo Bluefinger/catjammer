@@ -13,6 +13,8 @@ import {
 } from "./streams";
 import { Store, Logger, Scheduler, Permissions, RoleReactor } from "./services";
 
+const isProduction = process.env.NODE_ENV === "production";
+
 const config = JSON.parse(readFileSync("./config.json", "utf-8")) as Config;
 
 const client = new Client({ partials: ["MESSAGE", "REACTION", "USER", "GUILD_MEMBER"] });
@@ -22,8 +24,9 @@ const services: Services = {
     busyTimeout: 10000,
   }),
   log: new Logger({
+    ignoreErrors: isProduction,
     stdout: process.stdout,
-    stderr: createWriteStream("./error.log", { flags: "a" }),
+    stderr: isProduction ? process.stderr : createWriteStream("./error.log", { flags: "a" }),
   }),
   scheduler: new Scheduler(),
   permissions: new Permissions(),
