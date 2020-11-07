@@ -10,7 +10,8 @@ export const color: Command = {
   help:
     "use !color <hex>\n<hex> #ffffff hexadecimal format. Google color picker and most will give you this value",
   async execute({ message, args }): Promise<void> {
-    const hex = args["colorHex"];
+    const hexArg = args["colorHex"];
+    const hex = hexArg.toLowerCase();
     if (!isValidHex(hex)) {
       await message.reply("Invalid hex value");
       return;
