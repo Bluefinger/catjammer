@@ -212,6 +212,15 @@ describe("color commands", () => {
       expect(replySpy.firstCall.args[0]).to.be.eql("New color set");
     });
 
+    it("should call be successful when given hex value in upper case", async () => {
+      const args: Record<string, string> = {
+        colorHex: "#AAAAAA",
+      };
+
+      await color.execute({ message: message as GuildMessage, args: args } as ExtractedCommand);
+      expect(replySpy.firstCall.args[0]).to.be.eql("New color set");
+    });
+
     it("should call add role function when given good values", async () => {
       const args: Record<string, string> = {
         colorHex: "#0f0f0f",
