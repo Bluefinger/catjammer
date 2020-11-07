@@ -59,11 +59,16 @@ describe("createMessageStream", () => {
         id: "guild",
       },
       member: {
+        id: "id0",
+        guild: {
+          id: "guild",
+        },
         roles: {
           highest: {
             id: "id3",
           },
         },
+        hasPermission: () => true,
       },
       content: "!ping me",
     } as unknown;
@@ -111,11 +116,16 @@ describe("createMessageStream", () => {
         id: "guild",
       },
       member: {
+        id: "id0",
+        guild: {
+          id: "guild",
+        },
         roles: {
           highest: {
             id: "id3",
           },
         },
+        hasPermission: () => true,
       },
       content: "someone says hi",
     } as unknown;

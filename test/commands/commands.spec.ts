@@ -13,36 +13,11 @@ const commands = [
   { name: "privileged", description: "A privileged command", permission: 1 } as Command,
 ];
 
-const testCases: [
-  string,
-  { getPermission: (key: string) => PermissionLevels },
-  unknown,
-  string
-][] = [
+const testCases: [string, unknown, unknown, string][] = [
   [
     "will return a list of all commands for a privileged user",
     {
-      getPermission: () => PermissionLevels.OFFICER,
-    },
-    {
-      author: { id: "1234" },
-      guild: { id: "1111" },
-      member: {
-        roles: {
-          highest: {
-            id: "4321",
-          },
-        },
-      },
-      reply,
-    },
-    "Commands that are available to you are as follows:\n\n`ping` - Ping!\n`commands` - Lists the available commands to the user\n`privileged` - A privileged command\n",
-  ],
-  [
-    "will return a list of all commands for a privileged role",
-    {
-      getPermission: (key: string) =>
-        key === "1111::4321" ? PermissionLevels.OFFICER : PermissionLevels.NORMAL,
+      resolvePermissionLevel: () => PermissionLevels.OFFICER,
     },
     {
       author: { id: "1234" },
@@ -61,7 +36,7 @@ const testCases: [
   [
     "will return a reduced list of commands for a non-privileged user/role",
     {
-      getPermission: () => PermissionLevels.NORMAL,
+      resolvePermissionLevel: () => PermissionLevels.NORMAL,
     },
     {
       author: { id: "1234" },

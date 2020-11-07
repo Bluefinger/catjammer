@@ -3,8 +3,10 @@ module.exports = {
     {
       name: "catjammer",
       script: "dist/index.js",
-      watch: ".",
+      watch: ["dist"],
       watch_delay: 1000,
+      ignore_watch: ["node_modules"],
+      restart_delay: 1000,
       env: {
         NODE_ENV: "production",
       },
