@@ -30,7 +30,7 @@ describe("help command", () => {
 
     const services = {
       permissions: {
-        getPermission: () => 0,
+        resolvePermissionLevel: () => 0,
       },
     };
 

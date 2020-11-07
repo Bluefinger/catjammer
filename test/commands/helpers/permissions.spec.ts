@@ -12,13 +12,11 @@ describe("permission helpers", () => {
     ];
 
     const message: unknown = {
-      guild: {
-        id: "1111",
-      },
-      author: {
-        id: "1234",
-      },
       member: {
+        id: "1234",
+        guild: {
+          id: "1111",
+        },
         roles: {
           highest: {
             id: "2222",
@@ -30,22 +28,12 @@ describe("permission helpers", () => {
     const testCases: [string, unknown, number][] = [
       [
         "should filter by user permission",
-        { permissions: { getPermission: () => PermissionLevels.OFFICER } },
-        2,
-      ],
-      [
-        "should filter by role permission",
-        {
-          permissions: {
-            getPermission: (key: string) =>
-              key === "1111::2222" ? PermissionLevels.OFFICER : PermissionLevels.NORMAL,
-          },
-        },
+        { permissions: { resolvePermissionLevel: () => PermissionLevels.OFFICER } },
         2,
       ],
       [
         "should show a reduced list for normal permission",
-        { permissions: { getPermission: () => PermissionLevels.NORMAL } },
+        { permissions: { resolvePermissionLevel: () => PermissionLevels.NORMAL } },
         1,
       ],
     ];

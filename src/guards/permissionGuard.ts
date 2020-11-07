@@ -1,15 +1,11 @@
 import type { Services } from "../index.types";
 import type { PermissionGuard } from "./types";
-import { AllowablePermission, PermissionLevels, PermissionType } from "../constants";
+import { PermissionLevels } from "../constants";
 
 export const permissionGuard = ({ permissions }: Services): PermissionGuard => ({
   message,
   command,
 }) => {
-  const { author, guild, member } = message;
-  const permissionLevel: AllowablePermission = command.permission ?? PermissionLevels.NORMAL;
-  const userCheck = permissions.getPermission(`${guild.id}::${author.id}`, PermissionType.USER);
-  const roleId = member.roles.highest.id;
-  const roleCheck = permissions.getPermission(`${guild.id}::${roleId}`, PermissionType.ROLE);
-  return userCheck + roleCheck >= permissionLevel;
+  const commandPermissionLevel = command.permission ?? PermissionLevels.NORMAL;
+  return permissions.resolvePermissionLevel(message.member) >= commandPermissionLevel;
 };
