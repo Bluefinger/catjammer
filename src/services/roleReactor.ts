@@ -12,7 +12,7 @@ export interface ReactorRole {
 export class RoleReactor {
   private cachedReactors = new Set<string>();
 
-  constructor(private roleList: ReactorRole[]) {}
+  constructor(private readonly roleList: ReactorRole[]) {}
 
   extractRoleFromEmoji(reaction: MessageReaction): ReactorRole | undefined {
     const emoji = reaction.emoji.toString();
