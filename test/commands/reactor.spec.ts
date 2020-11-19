@@ -15,16 +15,28 @@ describe("reactor command", () => {
     };
     const services: unknown = {
       store: {
-        get: (id: string) => Promise.resolve(id === "reactor::id1" ? ["some", "thing"] : undefined),
+        get: (id: string) => {
+          if (id === "reactor::group::id1") {
+            return Promise.resolve(["some", "thing"]);
+          } else if (id === "reactor::color::id1") {
+            return Promise.resolve(["other", "thang"]);
+          } else {
+            return undefined;
+          }
+        },
       },
       roleReactor: {
+        add,
+      },
+      colorReactor: {
         add,
       },
     };
     it("loads saved reactor message ids into the role reactor service", async () => {
       await reactor.init(client as Client, services as Services);
-      expect(add.callCount).to.equal(1);
+      expect(add.callCount).to.equal(2);
       expect(add.firstCall.firstArg).to.equal("thing");
+      expect(add.secondCall.firstArg).to.equal("thang");
     });
   });
   describe("execute", () => {
@@ -41,14 +53,20 @@ describe("reactor command", () => {
         add: () => {},
         remove: () => {},
       },
+      colorReactor: {
+        setup: async () => {},
+        list: (msg: string) => `${msg}\nA List\n`,
+        add: () => {},
+        remove: () => {},
+      },
       store: {
         delete: async () => {},
         set: async () => {},
         get: (id: string) => {
           let result;
-          if (id === "reactor::guild1") {
+          if (id === "reactor::group::guild1") {
             result = ["1111", "thing"];
-          } else if (id === "reactor::guild2") {
+          } else if (id === "reactor::group::guild2") {
             result = ["1111", "fail"];
           }
           return Promise.resolve(result);
@@ -76,9 +94,18 @@ describe("reactor command", () => {
     });
     const testCases: [string, string, unknown, [keyof typeof spies, unknown][]][] = [
       [
+        "rejects invalid reactorType",
+        "guild1",
+        {
+          type: "wrong",
+        },
+        [["reply", "Invalid type argument"]],
+      ],
+      [
         "doesn't try to execute invalid actions",
         "guild1",
         {
+          type: "group",
           action: "do",
         },
         [["reply", "Invalid action"]],
@@ -87,6 +114,7 @@ describe("reactor command", () => {
         "doesn't try to set over an existing reactor message",
         "guild1",
         {
+          type: "group",
           action: "set",
           channel: "<#1111>",
           message: " a post",
@@ -100,6 +128,21 @@ describe("reactor command", () => {
         "sets a new reactor message",
         "guild0",
         {
+          type: "group",
+          action: "set",
+          channel: "<#1111>",
+          message: " a post",
+        },
+        [
+          ["reply", "Reactor message set"],
+          ["send", "a post\nA List\n"],
+        ],
+      ],
+      [
+        "sets a new color reactor message",
+        "guild0",
+        {
+          type: "color",
           action: "set",
           channel: "<#1111>",
           message: " a post",
@@ -113,6 +156,7 @@ describe("reactor command", () => {
         "catches errors and handles them when trying to set a message",
         "guild0",
         {
+          type: "group",
           action: "set",
           channel: "<#1112>",
           message: " a post",
@@ -126,6 +170,7 @@ describe("reactor command", () => {
         "can't edit a non-existant reactor message",
         "guild0",
         {
+          type: "group",
           action: "update",
           channel: "<#1111>",
           message: " an updated post",
@@ -139,6 +184,7 @@ describe("reactor command", () => {
         "won't edit a reactor message that exists in store but not in a channel",
         "guild2",
         {
+          type: "group",
           action: "update",
           channel: "<#1111>",
           message: " an updated post",
@@ -152,6 +198,7 @@ describe("reactor command", () => {
         "can edit an existing reactor message",
         "guild1",
         {
+          type: "group",
           action: "update",
           channel: "<#1111>",
           message: " an updated post",
@@ -165,6 +212,7 @@ describe("reactor command", () => {
         "can delete an existing reactor message",
         "guild1",
         {
+          type: "group",
           action: "clear",
           channel: "<#1111>",
         },
@@ -174,6 +222,7 @@ describe("reactor command", () => {
         "can't delete a non-existant reactor message",
         "guild0",
         {
+          type: "group",
           action: "clear",
           channel: "<#1111>",
         },
@@ -183,6 +232,7 @@ describe("reactor command", () => {
         "won't delete a reactor message that exists in store but not in a channel",
         "guild2",
         {
+          type: "group",
           action: "clear",
           channel: "<#1111>",
         },

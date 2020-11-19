@@ -21,7 +21,18 @@ const reactionHandler = (
     if (guild) {
       try {
         const member = await guild.members.fetch(user.id);
-        handler({ type, reaction, member });
+        handler({ reactorType: "group", type, reaction, member });
+      } catch (e) {
+        services.log.error(e);
+      }
+    }
+  }
+  if (!user.bot && services.colorReactor.has(reaction.message.id)) {
+    const guild = reaction.message.guild;
+    if (guild) {
+      try {
+        const member = await guild.members.fetch(user.id);
+        handler({ reactorType: "color", type, reaction, member });
       } catch (e) {
         services.log.error(e);
       }

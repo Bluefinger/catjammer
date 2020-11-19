@@ -15,6 +15,7 @@ export interface Services {
   readonly scheduler: Scheduler;
   readonly permissions: Permissions;
   readonly roleReactor: RoleReactor;
+  readonly colorReactor: RoleReactor;
 }
 
 export interface GuildPresence extends Presence {
@@ -32,6 +33,7 @@ export interface GuildMessage extends Message {
 }
 
 export interface RoleReaction {
+  reactorType: "group" | "color";
   type: "add" | "remove";
   reaction: MessageReaction;
   member: GuildMember;

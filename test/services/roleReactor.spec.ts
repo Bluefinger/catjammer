@@ -3,11 +3,12 @@ import type { GuildMember, MessageReaction } from "discord.js";
 import { spy } from "sinon";
 import type { GuildMessage } from "../../src/index.types";
 import { RoleReactor } from "../../src/services";
+import { groupRoles } from "../../src/reactorRoleLists";
 
 describe("RoleReactor", () => {
   describe("Role list formatting", () => {
     it("lists a formatted string of all roles available", () => {
-      const reactor = new RoleReactor();
+      const reactor = new RoleReactor(groupRoles);
       expect(reactor.list("").trim()).to.equal(
         "List of roles available:\n⚔ - M+ DPS\n🛡 - M+ Tank\n🚑 - M+ Healer\n🔥 - BG DPS\n❤ - BG Healer\n🥇 - Arena DPS\n🥈 - Arena Healer"
       );
@@ -15,7 +16,7 @@ describe("RoleReactor", () => {
   });
   describe("Reactor message cache", () => {
     it("implements a Set-like interface for checking for existing reactor messages", () => {
-      const reactor = new RoleReactor();
+      const reactor = new RoleReactor(groupRoles);
       expect(reactor.has("id")).to.be.false;
       reactor.add("id");
       expect(reactor.has("id")).to.be.true;
@@ -28,7 +29,7 @@ describe("RoleReactor", () => {
       const message: unknown = {
         react,
       };
-      const reactor = new RoleReactor();
+      const reactor = new RoleReactor(groupRoles);
       await reactor.setup(message as GuildMessage);
       expect(react.callCount).to.equal(7);
       expect(react.firstCall.firstArg).to.equal("⚔");
@@ -58,7 +59,7 @@ describe("RoleReactor", () => {
         remove: spies.remove,
       },
     };
-    const reactor = new RoleReactor();
+    const reactor = new RoleReactor(groupRoles);
 
     beforeEach(() => {
       spies.add.resetHistory();

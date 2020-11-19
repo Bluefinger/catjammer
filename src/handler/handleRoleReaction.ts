@@ -1,15 +1,17 @@
 import type { RoleReaction, Services } from "../index.types";
 
 export const handleRoleReaction = (services: Services) => async ({
+  reactorType,
   type,
   reaction,
   member,
 }: RoleReaction): Promise<void> => {
   try {
+    const reactor = reactorType === "group" ? services.roleReactor : services.colorReactor;
     if (type === "add") {
-      await services.roleReactor.applyRole(reaction, member);
+      await reactor.applyRole(reaction, member);
     } else {
-      await services.roleReactor.removeRole(reaction, member);
+      await reactor.removeRole(reaction, member);
     }
   } catch (e) {
     services.log.error(e);

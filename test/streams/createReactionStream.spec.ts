@@ -26,6 +26,9 @@ describe("createReactionStream", () => {
     roleReactor: {
       has: (id: string) => id === "test",
     },
+    colorReactor: {
+      has: (id: string) => id === "color",
+    },
   };
 
   const testCases: [string, string, unknown, unknown, [keyof typeof spies, unknown][]][] = [
@@ -82,6 +85,21 @@ describe("createReactionStream", () => {
       [["handler", false]],
     ],
     [
+      "filters out reactions from not from a guild and color type",
+      "messageReactionRemove",
+      {
+        partial: false,
+        message: {
+          id: "color",
+          guild: null,
+        },
+      },
+      {
+        bot: false,
+      },
+      [["handler", false]],
+    ],
+    [
       "filters out reactions that are not from a reactor message",
       "messageReactionRemove",
       {
@@ -125,12 +143,55 @@ describe("createReactionStream", () => {
       ],
     ],
     [
+      "handles errors from a reaction made by a user not from the guild and of color type",
+      "messageReactionRemove",
+      {
+        partial: false,
+        message: {
+          id: "color",
+          guild: {
+            members: {
+              fetch: () => Promise.reject("fail"),
+            },
+          },
+        },
+      },
+      {
+        bot: false,
+        id: "user",
+      },
+      [
+        ["handler", false],
+        ["error", "fail"],
+      ],
+    ],
+    [
       "allows reactions that are from a reactor message",
       "messageReactionAdd",
       {
         partial: false,
         message: {
           id: "test",
+          guild: {
+            members: {
+              fetch: () => Promise.resolve({}),
+            },
+          },
+        },
+      },
+      {
+        bot: false,
+        id: "user",
+      },
+      [["handler", true]],
+    ],
+    [
+      "allows reactions that are from a reactor message of color type",
+      "messageReactionAdd",
+      {
+        partial: false,
+        message: {
+          id: "color",
           guild: {
             members: {
               fetch: () => Promise.resolve({}),
