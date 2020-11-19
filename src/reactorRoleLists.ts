@@ -47,38 +47,87 @@ export const groupRoles: ReactorRole[] = [
 
 export const colorRoles: ReactorRole[] = [
   {
-    emoji: "🥈",
+    emoji: "👕",
     data: {
-      name: "blue",
-      color: "#003366",
+      name: "Death Knight",
+      color: "#c41e3a",
     },
   },
   {
-    emoji: "🚑",
+    emoji: "😠",
     data: {
-      name: "pink",
-      color: "#ffc0cb",
+      name: "Demon Hunter",
+      color: "#a330c9",
     },
   },
   {
-    emoji: "❤",
+    emoji: "💩",
     data: {
-      name: "yellow",
-      color: "#ffff00",
+      name: "Druid",
+      color: "#FF7C0A	",
     },
   },
   {
-    emoji: "🥇",
+    emoji: "🏹",
     data: {
-      name: "red",
-      color: "#ff0000",
+      name: "Hunter",
+      color: "#AAD372",
+    },
+  },
+  {
+    emoji: "📘",
+    data: {
+      name: "Mage",
+      color: "#3FC7EB	",
+    },
+  },
+  {
+    emoji: "👊",
+    data: {
+      name: "Monk",
+      color: "#00FF98",
     },
   },
   {
     emoji: "🛡",
     data: {
-      name: "green",
-      color: "#bada55",
+      name: "Paladin",
+      color: "#F48CBA	",
+    },
+  },
+  {
+    emoji: "✝",
+    data: {
+      name: "Priest",
+      color: "#FFFFFF	",
+    },
+  },
+  {
+    emoji: "🗡",
+    data: {
+      name: "Rogue",
+      color: "#FFF468",
+    },
+  },
+  {
+    emoji: "🌊",
+    data: {
+      name: "Shaman",
+      color: "#0070DD",
+    },
+  },
+  {
+    emoji: "💀",
+    data: {
+      name: "Warlock",
+      color: "#8788EE",
+    },
+  },
+  {
+    emoji: "⚔",
+    data: {
+      name: "Warrior",
+      color: "#00FF98",
     },
   },
 ];
