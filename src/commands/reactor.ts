@@ -2,6 +2,7 @@ import { GuildMessage } from "../index.types";
 import type { ExtractedCommand } from "../matcher";
 import { getTextChannel } from "./helpers/channels";
 import { extractId } from "./helpers/mentions";
+import { RoleReactor } from "../services/roleReactor";
 import type { CommandWithInit } from "./type";
 
 const enum ReactorActions {
@@ -12,18 +13,21 @@ const enum ReactorActions {
 
 type ReactorRecord = [string, string];
 
-const actions: Record<ReactorActions, (payload: ExtractedCommand) => Promise<void>> = {
-  set: async ({ message, services, args }) => {
-    const key = `reactor::${message.guild.id}`;
+const actions: Record<
+  ReactorActions,
+  (payload: ExtractedCommand, reactor: RoleReactor, reactorType: string) => Promise<void>
+> = {
+  set: async ({ message, services, args }, reactor, reactorType) => {
+    const key = `reactor::${reactorType}::${message.guild.id}`;
     const reactorMsg = await services.store.get<ReactorRecord>(key);
     if (!reactorMsg) {
       const channelId = extractId(args.channel);
       try {
         const room = getTextChannel(message, channelId);
-        const reply = await room.send(services.roleReactor.list(args.message).trimLeft());
+        const reply = await room.send(reactor.list(args.message).trimLeft());
         await services.store.set<ReactorRecord>(key, [channelId, reply.id]);
-        await services.roleReactor.setup(reply as GuildMessage);
-        services.roleReactor.add(reply.id);
+        await reactor.setup(reply as GuildMessage);
+        reactor.add(reply.id);
         await message.channel.send("Reactor message set");
       } catch (e) {
         services.log.error(e);
@@ -34,8 +38,8 @@ const actions: Record<ReactorActions, (payload: ExtractedCommand) => Promise<voi
     await message.reply("A reactor message already exists, try doing an `update` instead.");
   },
 
-  update: async ({ message, services, args }) => {
-    const key = `reactor::${message.guild.id}`;
+  update: async ({ message, services, args }, reactor, reactorType) => {
+    const key = `reactor::${reactorType}::${message.guild.id}`;
     const reactorMsg = await services.store.get<ReactorRecord>(key);
     if (reactorMsg) {
       const [channelId, replyId] = reactorMsg;
@@ -44,7 +48,7 @@ const actions: Record<ReactorActions, (payload: ExtractedCommand) => Promise<voi
         const messages = await room.messages.fetch();
         const msg = messages.get(replyId);
         if (msg) {
-          await msg.edit(services.roleReactor.list(args.message).trimLeft());
+          await msg.edit(reactor.list(args.message).trimLeft());
           await message.channel.send("Reactor message updated");
         } else {
           throw new Error("Reactor/Store desync. An id is stored, but no message exists");
@@ -58,8 +62,8 @@ const actions: Record<ReactorActions, (payload: ExtractedCommand) => Promise<voi
     await message.reply("There is no reactor message to edit");
   },
 
-  clear: async ({ message, services }) => {
-    const key = `reactor::${message.guild.id}`;
+  clear: async ({ message, services }, reactor, reactorType) => {
+    const key = `reactor::${reactorType}::${message.guild.id}`;
     const reactorMsg = await services.store.get<ReactorRecord>(key);
     if (reactorMsg) {
       const [channelId, replyId] = reactorMsg;
@@ -70,7 +74,7 @@ const actions: Record<ReactorActions, (payload: ExtractedCommand) => Promise<voi
         if (msg) {
           await room.messages.delete(msg);
           await services.store.delete(key);
-          services.roleReactor.remove(replyId);
+          reactor.remove(replyId);
           await message.channel.send("Reactor message deleted");
         } else {
           throw new Error("Reactor/Store desync. An id is stored, but no message exists");
@@ -93,21 +97,38 @@ export const reactor: CommandWithInit = {
   name: "reactor",
   description:
     "Creates a message that assigns roles automatically to users by listening to reactions on that message",
-  definition: "reactor :action #channel*",
+  definition: "reactor :type :action #channel*",
   help:
     "use !reactor set/update/clear #channel <post message here> to set the reactor message in the desired text channel",
   permission: 1,
   async init(client, services) {
     const loading = client.guilds.cache.map(async ({ id }) => {
-      const msg = await services.store.get<ReactorRecord>(`reactor::${id}`);
-      if (msg) {
-        services.roleReactor.add(msg[1]);
+      const groupMsg = await services.store.get<ReactorRecord>(`reactor::group::${id}`);
+      const colorMsg = await services.store.get<ReactorRecord>(`reactor::color::${id}`);
+      if (groupMsg) {
+        services.roleReactor.add(groupMsg[1]);
+      }
+      if (colorMsg) {
+        services.colorReactor.add(colorMsg[1]);
       }
     });
     await Promise.all(loading);
   },
-  execute(payload) {
+  async execute(payload) {
+    let reactor: RoleReactor;
+    const { type } = payload.args;
+    switch (type) {
+      case "color":
+        reactor = payload.services.colorReactor;
+        break;
+      case "group":
+        reactor = payload.services.roleReactor;
+        break;
+      default:
+        await payload.message.reply("Invalid type argument");
+        return;
+    }
     const action = actions[payload.args.action as ReactorActions] ?? invalidAction;
-    return action(payload);
+    return action(payload, reactor, type);
   },
 };

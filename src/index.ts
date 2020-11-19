@@ -12,6 +12,7 @@ import {
   createWelcomeStream,
 } from "./streams";
 import { Store, Logger, Scheduler, Permissions, RoleReactor } from "./services";
+import { groupRoles, colorRoles } from "./reactorRoleLists";
 
 const isProduction = process.env.NODE_ENV === "production";
 
@@ -30,7 +31,8 @@ const services: Services = {
   }),
   scheduler: new Scheduler(),
   permissions: new Permissions(),
-  roleReactor: new RoleReactor(),
+  roleReactor: new RoleReactor(groupRoles),
+  colorReactor: new RoleReactor(colorRoles),
 };
 const subscriptions: Subscription[] = [];
 
