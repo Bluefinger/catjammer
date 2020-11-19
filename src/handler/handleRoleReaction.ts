@@ -7,18 +7,11 @@ export const handleRoleReaction = (services: Services) => async ({
   member,
 }: RoleReaction): Promise<void> => {
   try {
-    if (reactorType === "group") {
-      if (type === "add") {
-        await services.roleReactor.applyRole(reaction, member);
-      } else {
-        await services.roleReactor.removeRole(reaction, member);
-      }
+    const reactor = reactorType === "group" ? services.roleReactor : services.colorReactor;
+    if (type === "add") {
+      await reactor.applyRole(reaction, member);
     } else {
-      if (type === "add") {
-        await services.colorReactor.applyRole(reaction, member);
-      } else {
-        await services.colorReactor.removeRole(reaction, member);
-      }
+      await reactor.removeRole(reaction, member);
     }
   } catch (e) {
     services.log.error(e);
