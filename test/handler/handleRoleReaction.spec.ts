@@ -11,6 +11,10 @@ describe("handleRoleReaction", () => {
       applyRole: applySpy,
       removeRole: removeSpy,
     },
+    colorReactor: {
+      applyRole: applySpy,
+      removeRole: removeSpy,
+    },
   };
   const handler = handleRoleReaction(services as Services);
   beforeEach(() => {
@@ -19,6 +23,7 @@ describe("handleRoleReaction", () => {
   });
   it("should apply a role on a add type reaction", async () => {
     const event: unknown = {
+      reactorType: "group",
       type: "add",
       reaction: {},
       member: {},
@@ -28,6 +33,27 @@ describe("handleRoleReaction", () => {
   });
   it("should remove a role on a remove type reaction", async () => {
     const event: unknown = {
+      reactorType: "group",
+      type: "remove",
+      reaction: {},
+      member: {},
+    };
+    await handler(event as RoleReaction);
+    expect(removeSpy.callCount).to.equal(1);
+  });
+  it("should apply a color role on a add type reaction", async () => {
+    const event: unknown = {
+      reactorType: "color",
+      type: "add",
+      reaction: {},
+      member: {},
+    };
+    await handler(event as RoleReaction);
+    expect(applySpy.callCount).to.equal(1);
+  });
+  it("should remove a color role on a remove type reaction", async () => {
+    const event: unknown = {
+      reactorType: "color",
       type: "remove",
       reaction: {},
       member: {},
@@ -47,6 +73,7 @@ describe("handleRoleReaction", () => {
       },
     };
     const event: unknown = {
+      reactorType: "group",
       type: "add",
       reaction: {},
       member: {},
