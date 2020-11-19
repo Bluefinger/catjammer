@@ -127,7 +127,7 @@ export const colorRoles: ReactorRole[] = [
     emoji: "⚔",
     data: {
       name: "Warrior",
-      color: "#00FF98",
+      color: "#C69B6D	",
     },
   },
 ];
