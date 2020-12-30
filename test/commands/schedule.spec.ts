@@ -135,6 +135,7 @@ describe("schedule command", () => {
         day: "Wrong",
         time: "01:20",
         channel: "<#1234>",
+        deleteTime: "0",
         message: "blah blah",
       };
 
@@ -152,6 +153,7 @@ describe("schedule command", () => {
         day: "Monday",
         time: "wrong",
         channel: "<#1234>",
+        deleteTime: "0",
         message: "blah blah",
       };
       await schedule.execute({
@@ -169,6 +171,7 @@ describe("schedule command", () => {
         day: "Monday",
         time: "00:02",
         channel: "<#1234>",
+        deleteTime: "0",
         message: "blah blah",
       };
       const dmMessage: unknown = {
@@ -191,6 +194,7 @@ describe("schedule command", () => {
         day: "Monday",
         time: "00:11",
         channel: "<#1234>",
+        deleteTime: "0",
         message: "blah blah",
       };
       services.scheduler.jobStore.set("1111taken", {} as Job);
@@ -209,6 +213,7 @@ describe("schedule command", () => {
         day: "Thursday",
         time: "01:20",
         channel: "<#1234>",
+        deleteTime: "0",
         message: "blah blah",
       };
       await schedule.execute({ message: message as Message, args, services } as ExtractedCommand);
@@ -225,6 +230,7 @@ describe("schedule command", () => {
         day: "Thursday",
         time: "01:20",
         channel: "<#1233>",
+        deleteTime: "0",
         message: "blah blah",
       };
       await schedule.execute({ message: message as Message, args, services } as ExtractedCommand);
@@ -237,10 +243,24 @@ describe("schedule command", () => {
         day: "Thursday",
         time: "01:20",
         channel: "<#1235>",
+        deleteTime: "0",
         message: "blah blah",
       };
       await schedule.execute({ message: message as Message, args, services } as ExtractedCommand);
       expect(replySpy.firstCall.args[0]).to.be.eql("Not a text channel");
+    });
+
+    it("reject deleteTime param not a number", async () => {
+      const args: Record<string, string> = {
+        name: "test",
+        day: "Thursday",
+        time: "01:20",
+        channel: "<#1235>",
+        deleteTime: "test",
+        message: "blah blah",
+      };
+      await schedule.execute({ message: message as Message, args, services } as ExtractedCommand);
+      expect(replySpy.firstCall.args[0]).to.be.eql("Invalid delete time");
     });
 
     it("throw error when no StorableJob array in store", async () => {
@@ -250,6 +270,7 @@ describe("schedule command", () => {
         day: "Thursday",
         time: "01:20",
         channel: "<#1234>",
+        deleteTime: "0",
         message: "blah blah",
       };
       try {
@@ -268,6 +289,7 @@ describe("schedule command", () => {
         day: "Thursday",
         time: "01:20",
         channel: "<#1234>",
+        deleteTime: "0",
         message: "blah blah",
       };
       await schedule.execute({ message: message as Message, args, services } as ExtractedCommand);
@@ -283,6 +305,7 @@ describe("schedule command", () => {
         day: "Thursday",
         time: "01:20",
         channel: "<#1234>",
+        deleteTime: "0",
         message: "blah blah",
       };
       await schedule.execute({ message: message as Message, args, services } as ExtractedCommand);
