@@ -23,7 +23,7 @@ export const schedule: CommandWithInit = {
   description: "Schedule reoccuring messages",
   definition: "schedule :name :day :time :deleteTime #channel *",
   help:
-    "use !schedule <name> <day> <time> <#channel> <message>\n<name> is used for cancelling the message, must not have spaces in it\n<day> should be spelt with full name and capital first letter\n<time> ##:## 24 hour format\n<channel>name as appears of channel\n<message>rest of command should just be your message",
+    "use !schedule <name> <day> <time> <deleteSeconds> <#channel> <message>\n<name> is used for cancelling the message, must not have spaces in it\n<day> should be spelt with full name and capital first letter\n<time> ##:## 24 hour format\n<deleteSeconds> Amount of seconds before deletion. Set to 0 for no deletion\n<channel>name as appears of channel\n<message>rest of command should just be your message",
   async execute({ message: command, args, services }): Promise<void> {
     const { name, day, time, channel, message, deleteTime } = args;
     if (!validateDay(day)) {
