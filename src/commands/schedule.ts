@@ -21,11 +21,11 @@ export const schedule: CommandWithInit = {
   name: "schedule",
   permission: 1,
   description: "Schedule reoccuring messages",
-  definition: "schedule :name :day :time #channel *",
+  definition: "schedule :name :day :time :deleteTime #channel *",
   help:
     "use !schedule <name> <day> <time> <#channel> <message>\n<name> is used for cancelling the message, must not have spaces in it\n<day> should be spelt with full name and capital first letter\n<time> ##:## 24 hour format\n<channel>name as appears of channel\n<message>rest of command should just be your message",
   async execute({ message: command, args, services }): Promise<void> {
-    const { name, day, time, channel, message } = args;
+    const { name, day, time, channel, message, deleteTime } = args;
     if (!validateDay(day)) {
       await command.reply("Invalid day argument. Day must be spelt in full");
       return;
@@ -38,6 +38,12 @@ export const schedule: CommandWithInit = {
 
     if (!isTextChannel(command.channel)) {
       await command.reply("Can only be used in a guild channel");
+      return;
+    }
+
+    const parsedDelete = Number(deleteTime);
+    if (isNaN(parsedDelete)) {
+      await command.reply("Invalid delete time");
       return;
     }
 
@@ -65,7 +71,7 @@ export const schedule: CommandWithInit = {
 
     const params = { minute, hour, dayOfWeek: days[day] };
 
-    services.scheduler.schedule(name, params, message, targetChannel);
+    services.scheduler.schedule(name, params, message, targetChannel, parsedDelete);
 
     const jobs = await services.store.get<StorableJob[]>(`jobs::${guild.id}`);
     if (!jobs) {
@@ -74,6 +80,7 @@ export const schedule: CommandWithInit = {
     const storableJob: StorableJob = {
       name,
       params,
+      deleteTime: parsedDelete,
       message: { guild: targetChannel.guild.id, channel: targetChannel.id, content: message },
     };
     jobs.push(storableJob);

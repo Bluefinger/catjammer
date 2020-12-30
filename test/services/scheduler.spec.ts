@@ -1,6 +1,6 @@
 import { assert, expect } from "chai";
 import { Scheduler } from "../../src/services";
-import { spy, fake, stub } from "sinon";
+import { spy, fake, stub, useFakeTimers } from "sinon";
 import {
   Client,
   TextChannel,
@@ -20,7 +20,9 @@ describe("scheduler service", () => {
       minute: "40",
       hour: "1",
       dayOfWeek: 1,
+      deleteTime: 10,
     };
+    const clock = useFakeTimers();
     beforeEach(() => {
       scheduleJobStub.resetHistory();
     });
@@ -29,22 +31,49 @@ describe("scheduler service", () => {
         send: fake(),
         guild: { name: "test" },
       };
-      scheduler.schedule("test", jobParams, "hello", textChannel as TextChannel);
+      scheduler.schedule("test", jobParams, "hello", textChannel as TextChannel, 0);
       expect(scheduleJobStub.called).to.be.true;
     });
-    it("callback should send message correctly", () => {
-      const sendSpy = spy();
+    it("callback should send message correctly and delete", async () => {
+      const deleteFake = fake();
+      const message = {
+        delete: deleteFake,
+      };
+      const sendSpy = fake.returns(message);
       const textChannel: unknown = {
         send: sendSpy,
         guild: { name: "test" },
       };
-      scheduler.schedule("test", jobParams, "hello", textChannel as TextChannel);
+      scheduler.schedule("test", jobParams, "hello", textChannel as TextChannel, 10);
       if (!scheduleJobStub.firstCall) {
         assert.fail("Did not call scheduleJob");
       } else {
-        const anonCallback = scheduleJobStub.firstCall.args[1] as () => void;
-        anonCallback();
+        const anonCallback = scheduleJobStub.firstCall.args[1] as () => Promise<void>;
+        await anonCallback();
+        clock.runAll();
         expect(sendSpy.firstCall.args[0]).to.be.eql("hello");
+        expect(deleteFake.called).to.be.true;
+      }
+    });
+    it("callback should send message correctly and not delete", async () => {
+      const deleteFake = fake();
+      const message = {
+        delete: deleteFake,
+      };
+      const sendSpy = fake.returns(message);
+      const textChannel: unknown = {
+        send: sendSpy,
+        guild: { name: "test" },
+      };
+      scheduler.schedule("test", jobParams, "hello", textChannel as TextChannel, 0);
+      if (!scheduleJobStub.firstCall) {
+        assert.fail("Did not call scheduleJob");
+      } else {
+        const anonCallback = scheduleJobStub.firstCall.args[1] as () => Promise<void>;
+        await anonCallback();
+        clock.runAll();
+        expect(sendSpy.firstCall.args[0]).to.be.eql("hello");
+        expect(deleteFake.called).to.be.false;
       }
     });
   });
@@ -80,6 +109,7 @@ describe("scheduler service", () => {
         hour: "1",
         dayOfWeek: 1,
       },
+      deleteTime: 10,
       message: {
         guild: "testGuild",
         channel: "testChannel",
@@ -87,9 +117,13 @@ describe("scheduler service", () => {
       },
     };
 
-    it("schedules the message and stores the job with correct args", () => {
+    it("schedules the message and stores the job with correct args and delete message", async () => {
       const channelCache = new Collection<Snowflake, GuildChannel>();
-      const sendSpy = spy();
+      const deleteSpy = fake();
+      const message = {
+        delete: deleteSpy,
+      };
+      const sendSpy = fake.returns(message);
       const channel: unknown = {
         type: "text",
         id: "testChannel",
@@ -107,15 +141,20 @@ describe("scheduler service", () => {
       const scheduler = new Scheduler();
       const scheduleJobStub = stub(scheduler, "scheduleJob");
       const jobStoreSetStub = stub(scheduler.jobStore, "set");
+
+      const clock = useFakeTimers();
+
       scheduler.scheduleFromStore(storableJob, client as Client);
 
       expect(scheduleJobStub.firstCall.args[0]).to.be.eql(storableJob.params);
       expect(jobStoreSetStub.firstCall.args[0]).to.be.eql(
         storableJob.message.guild + storableJob.name
       );
-      const callback = scheduleJobStub.firstCall.args[1] as () => void;
-      callback();
+      const callback = scheduleJobStub.firstCall.args[1] as () => Promise<void>;
+      await callback();
+      clock.runAll();
       expect(sendSpy.firstCall.args[0]).to.be.eql("hello world");
+      expect(deleteSpy.called).to.be.true;
     });
 
     it("throws error if no guild found", () => {
@@ -145,6 +184,60 @@ describe("scheduler service", () => {
       expect(() => scheduler.scheduleFromStore(storableJob, client as Client)).to.throw(
         "Channel found is not a text channel"
       );
+    });
+
+    it("schedules the message and stores the job with correct args and delete message", async () => {
+      const storableJobNoDel = {
+        name: "test",
+        params: {
+          minute: "40",
+          hour: "1",
+          dayOfWeek: 1,
+        },
+        deleteTime: 0,
+        message: {
+          guild: "testGuild",
+          channel: "testChannel",
+          content: "hello world",
+        },
+      };
+      const channelCache = new Collection<Snowflake, GuildChannel>();
+      const deleteSpy = fake();
+      const message = {
+        delete: deleteSpy,
+      };
+      const sendSpy = fake.returns(message);
+      const channel: unknown = {
+        type: "text",
+        id: "testChannel",
+        send: sendSpy,
+      };
+      channelCache.set(SnowflakeUtil.generate(), channel as GuildChannel);
+
+      const guildCache = new Collection<Snowflake, Guild>();
+      guildCache.set(SnowflakeUtil.generate(), {
+        channels: { cache: channelCache },
+        id: "testGuild",
+      } as Guild);
+      const client: unknown = { guilds: { cache: guildCache } };
+
+      const scheduler = new Scheduler();
+      const scheduleJobStub = stub(scheduler, "scheduleJob");
+      const jobStoreSetStub = stub(scheduler.jobStore, "set");
+
+      const clock = useFakeTimers();
+
+      scheduler.scheduleFromStore(storableJobNoDel, client as Client);
+
+      expect(scheduleJobStub.firstCall.args[0]).to.be.eql(storableJob.params);
+      expect(jobStoreSetStub.firstCall.args[0]).to.be.eql(
+        storableJob.message.guild + storableJob.name
+      );
+      const callback = scheduleJobStub.firstCall.args[1] as () => Promise<void>;
+      await callback();
+      clock.runAll();
+      expect(sendSpy.firstCall.args[0]).to.be.eql("hello world");
+      expect(deleteSpy.called).to.be.false;
     });
   });
 });

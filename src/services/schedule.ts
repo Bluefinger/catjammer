@@ -17,6 +17,7 @@ export interface MessageInfo {
 export interface StorableJob {
   name: string;
   params: JobParams;
+  deleteTime: number;
   message: MessageInfo;
 }
 
@@ -24,9 +25,20 @@ export class Scheduler {
   jobStore = new Map<string, Job>();
   scheduleJob = scheduleJob;
 
-  schedule(name: string, params: JobParams, message: string, target: TextChannel): void {
-    const job = this.scheduleJob(params, () => {
-      void target.send(message);
+  schedule(
+    name: string,
+    params: JobParams,
+    text: string,
+    target: TextChannel,
+    deleteTime: number
+  ): void {
+    const job = this.scheduleJob(params, async () => {
+      const message = await target.send(text);
+      if (deleteTime > 0) {
+        setTimeout(() => {
+          void message.delete();
+        }, deleteTime * 1000);
+      }
     });
     this.jobStore.set(target.guild.id + name, job);
   }
@@ -44,8 +56,13 @@ export class Scheduler {
     if (!isTextChannel(channel)) {
       throw new Error("Channel found is not a text channel");
     }
-    const job = this.scheduleJob(storeJob.params, () => {
-      void channel.send(storeJob.message.content);
+    const job = this.scheduleJob(storeJob.params, async () => {
+      const message = await channel.send(storeJob.message.content);
+      if (storeJob.deleteTime > 0) {
+        setTimeout(() => {
+          void message.delete();
+        }, storeJob.deleteTime * 1000);
+      }
     });
     this.jobStore.set(storeJob.message.guild + storeJob.name, job);
   }
