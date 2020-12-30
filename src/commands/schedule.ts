@@ -41,7 +41,7 @@ export const schedule: CommandWithInit = {
       return;
     }
 
-    const parsedDelete = Number(deleteTime);
+    const parsedDelete = parseInt(deleteTime, 10);
     if (isNaN(parsedDelete)) {
       await command.reply("Invalid delete time");
       return;
