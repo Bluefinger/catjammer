@@ -186,7 +186,7 @@ describe("scheduler service", () => {
       );
     });
 
-    it("schedules the message and stores the job with correct args and delete message", async () => {
+    it("schedules the message and stores the job with correct args and not delete message", async () => {
       const storableJobNoDel = {
         name: "test",
         params: {
