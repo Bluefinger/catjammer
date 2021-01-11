@@ -3,8 +3,9 @@ import { cancel } from "../../src/commands/cancel";
 import { Scheduler } from "../../src/services";
 import { ExtractedCommand } from "../../src/matcher";
 import { GuildMessage } from "../../src/index.types";
-import { fake, spy } from "sinon";
+import { assert, fake, spy } from "sinon";
 import { Message } from "discord.js";
+import { StorableJob } from "../../src//services/schedule";
 import { Job } from "node-schedule";
 import { Store } from "../../src/services";
 
@@ -56,10 +57,19 @@ describe("cancel command", () => {
     it("successfully call cancel with correct arguments", async () => {
       const storableJob: unknown = { name: "test", message: { guild: "guild" } };
       const dummyJob: unknown = { name: "dummy", message: { guild: "guild" } };
-      await services.store.set("jobs::guild", [dummyJob, storableJob]);
+      await services.store.set<StorableJob[]>("jobs::guild", [
+        dummyJob,
+        storableJob,
+      ] as StorableJob[]);
       await cancel.execute({ message: message as Message, args, services } as ExtractedCommand);
       expect(cancelSpy.calledWith("test", "guild") && replySpy.calledWith("Job removed")).to.be
         .true;
+      const jobs = await services.store.get<StorableJob[]>("jobs::guild");
+      if (jobs) {
+        expect(jobs.length === 1 && jobs.includes(dummyJob as StorableJob));
+      } else {
+        assert.fail("Store return no array");
+      }
     });
     it("should throw an error when jobs does not exist in store", async () => {
       await services.store.set("jobs::guild", []);

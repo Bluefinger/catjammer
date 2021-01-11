@@ -24,7 +24,9 @@ export const cancel: Command = {
       throw new Error("Failed to get jobs from store");
     }
 
-    const filteredJobs = jobs.filter((job) => job.name !== name && job.message.guild !== guildName);
+    const filteredJobs = jobs.filter(
+      (job) => !(job.name === name && job.message.guild === guildName)
+    );
     if (filteredJobs.length === jobs.length) {
       throw new Error("Job was found in memory but does not exist in the store");
     } else {
