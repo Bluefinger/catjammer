@@ -33,7 +33,7 @@ export interface GuildMessage extends Message {
 }
 
 export interface RoleReaction {
-  reactorType: "group" | "color";
+  reactorType: "group" | "color" | "poll";
   type: "add" | "remove";
   reaction: MessageReaction;
   member: GuildMember;
