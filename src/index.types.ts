@@ -1,5 +1,5 @@
 import type { Guild, GuildMember, Message, MessageReaction, Presence, User } from "discord.js";
-import type { Logger, Store, Scheduler, Permissions, RoleReactor } from "./services";
+import type { Logger, Store, Scheduler, Permissions, RoleReactor, PollManager } from "./services";
 
 export type ReadonlyList<T> = ReadonlyArray<Readonly<T>>;
 
@@ -16,6 +16,7 @@ export interface Services {
   readonly permissions: Permissions;
   readonly roleReactor: RoleReactor;
   readonly colorReactor: RoleReactor;
+  readonly pollManager: PollManager;
 }
 
 export interface GuildPresence extends Presence {

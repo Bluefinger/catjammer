@@ -1,6 +1,6 @@
 import { GuildMember, Message, MessageReaction, TextChannel } from "discord.js";
 
-const emojis: string[] = ["0️⃣", "1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"];
+export const emojis: string[] = ["0️⃣", "1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"];
 
 interface PollMessage {
   name: string;
@@ -28,12 +28,12 @@ export class PollManager {
       choices.set(emoji, option);
     }
     const message = await channel.send(messageString);
-    for (const emoji of this.cachedPolls.keys()) {
+    for (const emoji of choices.keys()) {
       await message.react(emoji);
     }
     this.cachedPolls.set(message.id, { name, mutExcl, message, choices });
-    setTimeout(async () => {
-      await this.finishPoll(message.id);
+    setTimeout(() => {
+      void this.finishPoll(message.id);
     }, duration * 1000);
   }
 
