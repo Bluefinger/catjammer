@@ -32,9 +32,17 @@ export class PollManager {
       await message.react(emoji);
     }
     this.cachedPolls.set(message.id, { name, mutExcl, message, choices });
-    setTimeout(() => {
+    // setTimeout(() => {
+    //   void this.finishPoll(message.id);
+    // }, duration * 1000);
+    this.fuckMe(() => {
       void this.finishPoll(message.id);
-    }, duration * 1000);
+    }, duration);
+    console.log(":)");
+  }
+
+  fuckMe(callback: () => void, duration: number): void {
+    setTimeout(callback, duration * 1000);
   }
 
   async finishPoll(id: string): Promise<void> {

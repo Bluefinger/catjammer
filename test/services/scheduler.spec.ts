@@ -53,6 +53,7 @@ describe("scheduler service", () => {
         clock.runAll();
         expect(sendSpy.firstCall.args[0]).to.be.eql("hello");
         expect(deleteFake.called).to.be.true;
+        clock.uninstall();
       }
     });
     it("callback should send message correctly and not delete", async () => {
