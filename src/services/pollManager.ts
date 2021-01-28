@@ -2,7 +2,7 @@ import { GuildMember, Message, MessageReaction, TextChannel } from "discord.js";
 
 export const emojis: string[] = ["0️⃣", "1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"];
 
-interface PollMessage {
+export interface PollMessage {
   name: string;
   mutExcl: boolean;
   message: Message;
@@ -19,6 +19,7 @@ export class PollManager {
     mutExcl: boolean,
     duration: number
   ): Promise<void> {
+    //build string
     let messageString = "";
     const choices = new Map<string, string>();
     for (let i = 0; i < pollOptions.length; i++) {
@@ -28,13 +29,11 @@ export class PollManager {
       choices.set(emoji, option);
     }
     const message = await channel.send(messageString);
+    //react
     for (const emoji of choices.keys()) {
       await message.react(emoji);
     }
     this.cachedPolls.set(message.id, { name, mutExcl, message, choices });
-    // setTimeout(() => {
-    //   void this.finishPoll(message.id);
-    // }, duration * 1000);
     this.fuckMe(() => {
       void this.finishPoll(message.id);
     }, duration);
@@ -61,9 +60,6 @@ export class PollManager {
         throw new Error("Reaction has a null count");
       }
       const votes = (count - 1).toString();
-      if (!votes) {
-        throw new Error("Reaction count returned null");
-      }
       if (!choice) {
         throw new Error("Poll choice does not exist in cache");
       }
@@ -81,6 +77,10 @@ export class PollManager {
     this.cachedPolls.delete(id);
   }
 
+  add(id: string, poll: PollMessage): void {
+    this.cachedPolls.set(id, poll);
+  }
+
   async reactionHandler(reaction: MessageReaction, member: GuildMember): Promise<void> {
     const cachedMessage = this.cachedPolls.get(reaction.message.id);
     if (!cachedMessage) {
@@ -91,10 +91,10 @@ export class PollManager {
 
     if (!choiceEmojis.includes(reaction.emoji.toString())) {
       await reaction.remove();
-    }
-
-    if (cachedMessage.mutExcl) {
-      await this.removePreviousReaction(reaction, member);
+    } else {
+      if (cachedMessage.mutExcl) {
+        await this.removePreviousReaction(reaction, member);
+      }
     }
   }
 
@@ -103,6 +103,7 @@ export class PollManager {
     for (const cachedReaction of cachedReactions) {
       if (cachedReaction.emoji.toString() !== reaction.emoji.toString()) {
         await cachedReaction.users.remove(member);
+        break;
       }
     }
   }

@@ -5,10 +5,10 @@ import { isTextChannel } from "./helpers/channels";
 
 const mutExclRegEx = /^(Y|y|N|n)$/;
 
-export const ping: Command = {
+export const poll: Command = {
   name: "poll",
   description: "Create a poll in a specified channel with given choices",
-  definition: "poll :name :duration :mutExcl #channel *",
+  definition: "poll :name :duration :mutExcl #channelArg *",
   help: "use !ping",
   permission: 1,
   async execute({ message: command, services, args }) {
