@@ -9,7 +9,7 @@ export const poll: Command = {
   name: "poll",
   description: "Create a poll in a specified channel with given choices",
   definition: "poll :name :duration :mutExcl #channelArg *",
-  help: "use !ping",
+  help: "use !poll <name> <duration> <mutual exclusivity> <channel> <comma seperated options>",
   permission: 1,
   async execute({ message: command, services, args }) {
     const { mutExcl, duration, message, channelArg, name } = args;

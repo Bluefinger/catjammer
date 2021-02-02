@@ -19,43 +19,34 @@ export class PollManager {
     mutExcl: boolean,
     duration: number
   ): Promise<void> {
-    //build string
-    let messageString = "";
     const choices = new Map<string, string>();
-    for (let i = 0; i < pollOptions.length; i++) {
-      const emoji = emojis[i];
-      const option = pollOptions[i];
-      messageString += `${emoji} = ${option}\n`;
-      choices.set(emoji, option);
-    }
-    const message = await channel.send(messageString);
+    pollOptions.forEach((option, i) => choices.set(emojis[i], option));
+    const message = await channel.send(this.buildMessageString(name, pollOptions));
     //react
     for (const emoji of choices.keys()) {
       await message.react(emoji);
     }
     this.cachedPolls.set(message.id, { name, mutExcl, message, choices });
-    this.fuckMe(() => {
+    this.scheduleFinish(() => {
       void this.finishPoll(message.id);
     }, duration);
-    console.log(":)");
   }
 
-  fuckMe(callback: () => void, duration: number): void {
-    setTimeout(callback, duration * 1000);
+  buildMessageString(title: string, pollOptions: string[]): string {
+    let messageString = title;
+    for (let i = 0; i < pollOptions.length; i++) {
+      const emoji = emojis[i];
+      const option = pollOptions[i];
+      messageString += `\n${emoji} = ${option}`;
+    }
+    return messageString;
   }
 
-  async finishPoll(id: string): Promise<void> {
-    const message = this.cachedPolls.get(id);
-    if (!message) {
-      throw new Error("Message does not exist in cache");
-    }
-    const reactions = message.message.reactions.cache.array();
-    if (!reactions) {
-      throw new Error("Reactions array is null");
-    }
-    let resultString = `Result for ${message.name}`;
+  buildResultString(reactions: MessageReaction[], poll: PollMessage): string {
+    const { name, choices } = poll;
+    let resultString = `Result for ${name}`;
     for (const { emoji, count } of reactions) {
-      const choice = message.choices.get(emoji.toString());
+      const choice = choices.get(emoji.toString());
       if (!count) {
         throw new Error("Reaction has a null count");
       }
@@ -63,10 +54,27 @@ export class PollManager {
       if (!choice) {
         throw new Error("Poll choice does not exist in cache");
       }
-      resultString += `${choice} vote = ${votes}`;
+      resultString += `\n${choice} votes = ${votes}`;
     }
-    await message.message.channel.send(resultString);
-    await message.message.delete();
+    return resultString;
+  }
+
+  scheduleFinish(callback: () => void, duration: number): void {
+    setTimeout(callback, duration * 1000);
+  }
+
+  async finishPoll(id: string): Promise<void> {
+    const poll = this.cachedPolls.get(id);
+    if (!poll) {
+      throw new Error("Message does not exist in cache");
+    }
+    const reactions = poll.message.reactions.cache.array();
+    if (!reactions) {
+      throw new Error("Reactions array is null");
+    }
+    const resultString = this.buildResultString(reactions, poll);
+    await poll.message.channel.send(resultString);
+    await poll.message.delete();
   }
 
   has(id: string): boolean {
@@ -103,7 +111,6 @@ export class PollManager {
     for (const cachedReaction of cachedReactions) {
       if (cachedReaction.emoji.toString() !== reaction.emoji.toString()) {
         await cachedReaction.users.remove(member);
-        break;
       }
     }
   }

@@ -108,7 +108,7 @@ describe("createReactionStream", () => {
     ],
     [
       "filters out reactions from not from a guild and poll type",
-      "messageReactionRemove",
+      "messageReactionAdd",
       {
         partial: false,
         message: {
@@ -189,7 +189,7 @@ describe("createReactionStream", () => {
     ],
     [
       "handles errors from a reaction made by a user not from the guild and of poll type",
-      "messageReactionRemove",
+      "messageReactionAdd",
       {
         partial: false,
         message: {

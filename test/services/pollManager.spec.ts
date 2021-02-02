@@ -30,7 +30,7 @@ describe("PollManager", () => {
     it("calls finishPoll successfully", async () => {
       const pollManager = new PollManager();
       const finishPollStub = stub(pollManager, "finishPoll");
-      const timeoutStub = stub(pollManager, "fuckMe");
+      const timeoutStub = stub(pollManager, "scheduleFinish");
       const pollOptions = ["one", "two", "three"];
       const duration = 100;
       await pollManager.createPoll(channel as TextChannel, "test", pollOptions, true, duration);
@@ -44,14 +44,14 @@ describe("PollManager", () => {
       }
       expect(finishPollStub.called).to.be.true;
     });
-    it("fuckMe works", () => {
+    it("scheduleFinish works", () => {
       const pollManager = new PollManager();
       const spyCallback = spy();
-      pollManager.fuckMe(() => {
+      pollManager.scheduleFinish(() => {
         spyCallback();
       }, 100);
       expect(clock.countTimers()).to.equal(1);
-      console.log(clock.runAll());
+      clock.runAll();
       expect(spyCallback.called).to.be.true;
     });
   });
@@ -252,6 +252,43 @@ describe("PollManager", () => {
     it("removes previous reaction", async () => {
       await pollManager.removePreviousReaction(reaction as MessageReaction, {} as GuildMember);
       expect(removeSpy.called).to.be.true;
+    });
+  });
+  describe("buildMessageString", () => {
+    const pollManager = new PollManager();
+    const pollOptions = ["one", "two"];
+    const expected = `Test\n${emojis[0]} = one\n${emojis[1]} = two`;
+    it("correctly build string", () => {
+      expect(pollManager.buildMessageString("Test", pollOptions)).to.eql(expected);
+    });
+  });
+  describe("buildResultString", () => {
+    it("should build result string correctly", () => {
+      const pollManager = new PollManager();
+      const choices = new Map<string, string>();
+      choices.set(emojis[0], "one");
+      choices.set(emojis[1], "two");
+      const reactions = [
+        {
+          emoji: {
+            toString: () => emojis[0],
+          },
+          count: 2,
+        },
+        {
+          emoji: {
+            toString: () => emojis[1],
+          },
+          count: 2,
+        },
+      ];
+      const poll: unknown = { name: "Test", choices };
+      const expected = `Result for Test\none votes = 1\ntwo votes = 1`;
+      const result = pollManager.buildResultString(
+        reactions as MessageReaction[],
+        poll as PollMessage
+      );
+      expect(result).to.eql(expected);
     });
   });
 });

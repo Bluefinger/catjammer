@@ -39,7 +39,7 @@ const reactionHandler = (
     }
   }
 
-  if (!user.bot && services.pollManager.has(reaction.message.id)) {
+  if (!user.bot && type === "add" && services.pollManager.has(reaction.message.id)) {
     const guild = reaction.message.guild;
     if (guild) {
       try {
