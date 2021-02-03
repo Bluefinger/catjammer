@@ -18,7 +18,7 @@ export const poll: Command = {
       return;
     }
 
-    const mutExclBool = mutExcl === "Y" || mutExcl === "y" ? true : false;
+    const mutExclBool = mutExcl.toLowerCase() === "y";
 
     const parsedDuration = parseInt(duration, 10);
     if (isNaN(parsedDuration)) {

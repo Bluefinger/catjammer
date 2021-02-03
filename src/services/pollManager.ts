@@ -33,13 +33,10 @@ export class PollManager {
   }
 
   buildMessageString(title: string, pollOptions: string[]): string {
-    let messageString = title;
-    for (let i = 0; i < pollOptions.length; i++) {
-      const emoji = emojis[i];
-      const option = pollOptions[i];
-      messageString += `\n${emoji} = ${option}`;
-    }
-    return messageString;
+    return pollOptions.reduce(
+      (message, option, i) => `${message}\n${emojis[i]} = ${option}`,
+      title
+    );
   }
 
   buildResultString(reactions: MessageReaction[], poll: PollMessage): string {
