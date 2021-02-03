@@ -38,6 +38,18 @@ const reactionHandler = (
       }
     }
   }
+
+  if (!user.bot && type === "add" && services.pollManager.has(reaction.message.id)) {
+    const guild = reaction.message.guild;
+    if (guild) {
+      try {
+        const member = await guild.members.fetch(user.id);
+        await services.pollManager.reactionHandler(reaction, member);
+      } catch (e) {
+        services.log.error(e);
+      }
+    }
+  }
 };
 
 export const createReactionStream = (

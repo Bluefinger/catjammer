@@ -1,6 +1,6 @@
 import { assert, expect } from "chai";
 import { Scheduler } from "../../src/services";
-import { spy, fake, stub, useFakeTimers } from "sinon";
+import { spy, fake, stub, useFakeTimers, SinonFakeTimers } from "sinon";
 import {
   Client,
   TextChannel,
@@ -13,6 +13,13 @@ import {
 import { Job } from "node-schedule";
 
 describe("scheduler service", () => {
+  let clock: SinonFakeTimers;
+  beforeEach(function () {
+    clock = useFakeTimers();
+  });
+  afterEach(function () {
+    clock?.restore();
+  });
   describe("schedule", () => {
     const scheduler = new Scheduler();
     const scheduleJobStub = stub(scheduler, "scheduleJob");
@@ -22,7 +29,6 @@ describe("scheduler service", () => {
       dayOfWeek: 1,
       deleteTime: 10,
     };
-    const clock = useFakeTimers();
     beforeEach(() => {
       scheduleJobStub.resetHistory();
     });

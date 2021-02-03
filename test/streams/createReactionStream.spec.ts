@@ -8,15 +8,18 @@ import type { Services } from "../../src/index.types";
 describe("createReactionStream", () => {
   const handler = spy();
   const error = spy();
+  const pollHandler = spy();
 
   beforeEach(() => {
     handler.resetHistory();
     error.resetHistory();
+    pollHandler.resetHistory();
   });
 
   const spies = {
     handler,
     error,
+    pollHandler,
   };
 
   const services: unknown = {
@@ -28,6 +31,10 @@ describe("createReactionStream", () => {
     },
     colorReactor: {
       has: (id: string) => id === "color",
+    },
+    pollManager: {
+      has: (id: string) => id === "poll",
+      reactionHandler: pollHandler,
     },
   };
 
@@ -100,6 +107,21 @@ describe("createReactionStream", () => {
       [["handler", false]],
     ],
     [
+      "filters out reactions from not from a guild and poll type",
+      "messageReactionAdd",
+      {
+        partial: false,
+        message: {
+          id: "poll",
+          guild: null,
+        },
+      },
+      {
+        bot: false,
+      },
+      [["pollHandler", false]],
+    ],
+    [
       "filters out reactions that are not from a reactor message",
       "messageReactionRemove",
       {
@@ -166,6 +188,29 @@ describe("createReactionStream", () => {
       ],
     ],
     [
+      "handles errors from a reaction made by a user not from the guild and of poll type",
+      "messageReactionAdd",
+      {
+        partial: false,
+        message: {
+          id: "poll",
+          guild: {
+            members: {
+              fetch: () => Promise.reject("fail"),
+            },
+          },
+        },
+      },
+      {
+        bot: false,
+        id: "user",
+      },
+      [
+        ["pollHandler", false],
+        ["error", "fail"],
+      ],
+    ],
+    [
       "allows reactions that are from a reactor message",
       "messageReactionAdd",
       {
@@ -204,6 +249,26 @@ describe("createReactionStream", () => {
         id: "user",
       },
       [["handler", true]],
+    ],
+    [
+      "allows reactions that are from a reactor message of poll type",
+      "messageReactionAdd",
+      {
+        partial: false,
+        message: {
+          id: "poll",
+          guild: {
+            members: {
+              fetch: () => Promise.resolve({}),
+            },
+          },
+        },
+      },
+      {
+        bot: false,
+        id: "user",
+      },
+      [["pollHandler", true]],
     ],
   ];
 
